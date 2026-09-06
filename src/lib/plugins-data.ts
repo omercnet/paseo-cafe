@@ -1,19 +1,19 @@
 import { createServerFn } from "@tanstack/react-start"
-import { readFile } from "node:fs/promises"
-import { join } from "node:path"
 import { z } from "zod"
 import { pluginRecordSchema } from "@/lib/plugin-schema"
 import type { PluginRecord } from "@/lib/plugin-schema"
+import plugins from "../../data/plugins.json"
 
-// NOTE: plain createServerFn for now — this reads data/plugins.json off disk
-// on every request, which is fine for local dev. When we wire up the static
-// GitHub Pages build, wrap this with `staticFunctionMiddleware` (see
-// https://tanstack.com/start/latest/docs/framework/react/guide/static-server-functions)
-// so it's inlined at build time instead of needing a server at runtime.
+// Statically imported rather than read off disk at request time: the CI
+// pipeline (scan -> commit -> deploy, see .github/workflows/enrich-and-deploy.yml)
+// always regenerates data/plugins.json *before* the app is built, so Vite/Nitro
+// inline it straight into the server bundle at build time. That also makes the
+// Zerops deploy self-contained — .output/ doesn't need the repo's data/
+// directory alongside it at runtime, just this one bundled server file.
+// createServerFn still keeps this out of the client bundle: only its RPC
+// result crosses the wire, not the JSON module itself.
 export const getPlugins = createServerFn({ method: "GET" }).handler(
   async (): Promise<PluginRecord[]> => {
-    const path = join(process.cwd(), "data", "plugins.json")
-    const raw = JSON.parse(await readFile(path, "utf8"))
-    return z.array(pluginRecordSchema).parse(raw)
+    return z.array(pluginRecordSchema).parse(plugins)
   }
 )

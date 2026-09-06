@@ -15,6 +15,8 @@ export default [
     },
   },
   {
-    ignores: ["eslint.config.js", ".prettierrc"],
+    // .output is Nitro's build output (see vite.config.ts / zerops.yaml) —
+    // not covered by the shared config's default ignores like `dist` is.
+    ignores: ["eslint.config.js", ".prettierrc", ".output/**"],
   },
 ]

@@ -25,8 +25,14 @@ registry/<id>.json      →  scripts/validate-registry.ts (CI, on PR)
 4. The site (`src/routes/plugins.index.tsx`, `src/routes/plugins.$id.tsx`) reads
    `data/plugins.json` via `src/lib/plugins-data.ts` — it never talks to GitHub directly.
 
-Deploying the build to GitHub Pages is deliberately not wired up yet (see the TODO in
-`enrich-and-deploy.yml`); everything above runs and is verifiable locally today.
+5. **`.github/workflows/enrich-and-deploy.yml`** runs the scan, commits the refreshed `data/` +
+   `public/og` + `public/sitemap.xml` + `public/robots.txt` back to `main`, then deploys to
+   [Zerops](https://zerops.io) (`zerops.yaml`) — a persistent Bun server (via
+   [Nitro](https://nitro.build), wired up in `vite.config.ts`), not a static export. That's also why
+   `src/lib/plugins-data.ts` can just statically `import` `data/plugins.json` instead of reading it
+   off disk at request time: it gets inlined into the server bundle at build time, and there's an
+   actual long-running server to run that bundle on — no GitHub Pages-style static-hosting
+   constraints to design around.
 
 ## Submitting a plugin
 

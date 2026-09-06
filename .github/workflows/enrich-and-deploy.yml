@@ -1,17 +1,24 @@
 name: Enrich and deploy
 
-# Rebuilds data/plugins.json from every registry/*.json entry (the "plumb
-# for paseo" scan) and builds the site. Runs whenever the registry or app
-# code changes on main, and nightly so stars/last-commit/broken-repo
+# Rebuilds data/plugins.json (and the OG images/sitemap/robots.txt that go
+# with it) from every registry/*.json entry, commits the result back to
+# main, then deploys to Zerops. Runs on every push to main — which is what
+# a submission PR merge is — and nightly so stars/last-commit/broken-repo
 # detection stay fresh even without new submissions.
 #
-# The actual GitHub Pages deploy step is intentionally left for later —
-# see the TODO at the bottom of this file.
+# Why one job does scan -> commit -> deploy instead of "PR merges, then a
+# separate deploy picks it up": `zcli push` (used by zeropsio/actions below)
+# uploads *this job's local working directory* to Zerops, which then runs
+# its own build there (see zerops.yaml). It does not care what's on the
+# `main` ref. So the commit-back step is for the repo's own record (so
+# data/plugins.json in git matches what's live, and future scans diff
+# against it) — not something the deploy depends on. There's no race and
+# no separate "wait for the commit, then redeploy" step to get wrong.
 on:
-  # push:
-  #   branches: [main]
-  # schedule:
-  #   - cron: "17 3 * * *"
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 3 * * *"
   workflow_dispatch: {}
 
 permissions:
@@ -25,7 +32,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -42,18 +49,24 @@ jobs:
         run: |
           git config user.name "paseo-cafe-bot"
           git config user.email "actions@github.com"
-          git add data/
+          git add data/ public/og public/sitemap.xml public/robots.txt
+          # [skip ci] stops this commit from re-triggering this same
+          # push-triggered workflow — GitHub skips runs for commits whose
+          # message contains it, so this can't loop.
           git diff --cached --quiet || git commit -m "chore: refresh plugin data [skip ci]"
           git push
 
       - name: Typecheck & build
+        # Not what actually ships — Zerops does its own build from
+        # zerops.yaml on its own infrastructure. This is a fast-fail gate so
+        # a broken build fails here in ~a minute instead of failing (or
+        # worse, half-deploying) over on Zerops.
         run: |
           bun run typecheck
           bun run build
 
-      # TODO(github-pages): upload the `dist/` (or configured output) folder
-      # as a Pages artifact and deploy it — needs `pages: write` +
-      # `id-token: write` permissions, `actions/configure-pages`,
-      # `actions/upload-pages-artifact`, and `actions/deploy-pages`, plus
-      # deciding the TanStack Start prerender/SPA strategy and base path.
-      # Deliberately deferred; see repo README.
+      - name: Deploy to Zerops
+        uses: zeropsio/actions@main
+        with:
+          access-token: ${{ secrets.ZEROPS_TOKEN }}
+          service-id: ${{ secrets.ZEROPS_SERVICE_ID }}
