@@ -14,10 +14,17 @@
  */
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import { registryEntrySchema } from "../src/lib/registry-schema.ts"
+import {
+  PLATFORM_LABELS,
+  registryEntrySchema,
+} from "../src/lib/registry-schema.ts"
 import { pluginRecordSchema } from "../src/lib/plugin-schema.ts"
 import type { PluginRecord } from "../src/lib/plugin-schema.ts"
-import { extractInstallSection, firstParagraph } from "../src/lib/readme.ts"
+import {
+  extractInstallSection,
+  extractLimitationsSection,
+  firstParagraph,
+} from "../src/lib/readme.ts"
 import { renderMarkdownToHtml } from "../src/lib/markdown.ts"
 import { extractVideos, resolveGitHubAssetVideos } from "../src/lib/videos.ts"
 import {
@@ -77,6 +84,8 @@ async function scanOne(entryFile: string): Promise<PluginRecord> {
     name: entry.id,
     description: "",
     categories: entry.categories,
+    platforms: entry.platforms,
+    caveats: entry.caveats,
     health: {
       manifestValid: false,
       hasReadme: false,
@@ -136,6 +145,11 @@ async function scanOne(entryFile: string): Promise<PluginRecord> {
       ? await renderMarkdownToHtml(installNotes)
       : undefined
 
+    const limitationsNotes = extractLimitationsSection(readme ?? "")
+    const limitationsNotesHtml = limitationsNotes
+      ? await renderMarkdownToHtml(limitationsNotes)
+      : undefined
+
     const readmeVideos = extractVideos(readme ?? "")
     const assetVideos = readme
       ? await resolveGitHubAssetVideos(
@@ -161,12 +175,16 @@ async function scanOne(entryFile: string): Promise<PluginRecord> {
       author: authorName(pkg?.author),
       license: repoMeta.license?.spdx_id ?? pkg?.license,
       categories: entry.categories,
+      platforms: entry.platforms,
+      caveats: entry.caveats,
       // raw JSON.parse output is always JSON-compatible; the broader
       // Record<string, unknown> return type of fetchRawJson just isn't
       // narrow enough for the schema's JSON-value type.
       manifest: (manifest as PluginRecord["manifest"]) ?? undefined,
       installNotes,
       installNotesHtml,
+      limitationsNotes,
+      limitationsNotesHtml,
       owner: {
         login: repoMeta.owner.login,
         avatarUrl: repoMeta.owner.avatar_url,
@@ -272,6 +290,7 @@ async function main() {
       title: record.name,
       description: record.description,
       badges: [
+        ...record.platforms.map((p) => PLATFORM_LABELS[p]),
         ...record.categories,
         ...(record.license ? [record.license] : []),
       ],

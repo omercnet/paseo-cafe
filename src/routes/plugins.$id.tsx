@@ -20,6 +20,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { SITE_NAME } from "@/lib/site"
 import { seo } from "@/lib/seo"
 import { pluginJsonLd } from "@/lib/json-ld"
+import { PLATFORM_LABELS } from "@/lib/registry-schema"
 
 export const Route = createFileRoute("/plugins/$id")({
   component: PluginDetail,
@@ -103,6 +104,11 @@ function PluginDetail() {
           {plugin.description || "No description available."}
         </p>
         <div className="flex flex-wrap gap-1.5">
+          {plugin.platforms.map((p) => (
+            <Badge key={p} variant="outline">
+              {PLATFORM_LABELS[p]}
+            </Badge>
+          ))}
           {plugin.categories.map((c) => (
             <Badge key={c} variant="secondary">
               {c}
@@ -150,6 +156,48 @@ function PluginDetail() {
           before installing.
         </AlertDescription>
       </Alert>
+
+      {plugin.platforms.length > 0 ||
+      plugin.caveats.length > 0 ||
+      plugin.limitationsNotesHtml ? (
+        <Alert>
+          <IconAlertTriangle />
+          <AlertTitle>Limitations</AlertTitle>
+          <AlertDescription>
+            {plugin.platforms.length > 0 ? (
+              <p>
+                <strong className="text-foreground">
+                  Supported platforms:
+                </strong>{" "}
+                {plugin.platforms.map((p) => PLATFORM_LABELS[p]).join(", ")}.
+              </p>
+            ) : null}
+            {plugin.caveats.length > 0 ? (
+              <ul className="list-disc pl-4">
+                {plugin.caveats.map((c) => (
+                  <li key={c}>{c}</li>
+                ))}
+              </ul>
+            ) : null}
+            {plugin.limitationsNotesHtml ? (
+              <div>
+                <p className="mb-1 text-xs tracking-wide uppercase">
+                  From the plugin's README
+                </p>
+                {/* limitationsNotesHtml is sanitized at scan time (src/lib/markdown.ts) before
+                    it's ever written to data/plugins.json — never render raw third-party
+                    markdown here. */}
+                <div
+                  className="prose prose-sm max-w-none dark:prose-invert prose-pre:rounded-none prose-pre:bg-muted"
+                  dangerouslySetInnerHTML={{
+                    __html: plugin.limitationsNotesHtml,
+                  }}
+                />
+              </div>
+            ) : null}
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       {plugin.scanError ? (
         <div className="rounded-none border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">

@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { PLATFORMS } from "@/lib/registry-schema"
 
 /**
  * The enriched, generated record for one plugin. Never hand-authored — the
@@ -64,6 +65,11 @@ export const pluginRecordSchema = z.object({
   author: z.string().optional(),
   license: z.string().optional(),
   categories: z.array(z.string()).default([]),
+  // Author-declared in registry/<id>.json — see src/lib/registry-schema.ts.
+  // Authoritative when present; limitationsNotes below is the best-effort
+  // fallback for whatever the author didn't declare here.
+  platforms: z.array(z.enum(PLATFORMS)).default([]),
+  caveats: z.array(z.string()).default([]),
   manifest: z.record(z.string(), z.json()).optional(),
   repoMeta: pluginRepoMetaSchema.optional(),
   owner: pluginOwnerSchema.optional(),
@@ -75,6 +81,12 @@ export const pluginRecordSchema = z.object({
   // — the only thing the site actually renders.
   installNotes: z.string().optional(),
   installNotesHtml: z.string().optional(),
+  // Same idea, but for a "Limitations"/"Caveats"/"Known issues" README
+  // section — the free, deterministic first line of defense for things like
+  // "macOS only" that an author didn't declare via `platforms`/`caveats`
+  // above. See src/lib/readme.ts's extractLimitationsSection.
+  limitationsNotes: z.string().optional(),
+  limitationsNotesHtml: z.string().optional(),
   health: pluginHealthSchema,
   images: z.array(z.string()).default([]),
   videos: z.array(videoEmbedSchema).default([]),

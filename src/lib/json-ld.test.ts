@@ -12,6 +12,8 @@ const basePlugin: PluginRecord = {
   version: "0.0.0",
   license: "MIT",
   categories: ["monitoring"],
+  platforms: [],
+  caveats: [],
   owner: {
     login: "mcowger",
     avatarUrl: "https://avatars.githubusercontent.com/u/1929548?v=4",
@@ -55,6 +57,21 @@ describe("pluginJsonLd", () => {
       images: ["https://example.com/shot.png"],
     })
     expect(ld.image).toBe("https://example.com/shot.png")
+  })
+
+  it("defaults operatingSystem to Any when no platforms are declared", () => {
+    const ld = pluginJsonLd(basePlugin)
+    expect(ld.operatingSystem).toBe("Any")
+  })
+
+  it("reflects declared platforms in operatingSystem instead of Any", () => {
+    const ld = pluginJsonLd({ ...basePlugin, platforms: ["macos"] })
+    expect(ld.operatingSystem).toBe("macOS")
+  })
+
+  it("joins multiple declared platforms", () => {
+    const ld = pluginJsonLd({ ...basePlugin, platforms: ["macos", "linux"] })
+    expect(ld.operatingSystem).toBe("macOS, Linux")
   })
 
   it("omits undefined optional fields entirely when serialized", () => {

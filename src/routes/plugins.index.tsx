@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { seo } from "@/lib/seo"
+import { PLATFORM_LABELS } from "@/lib/registry-schema"
 
 export const Route = createFileRoute("/plugins/")({
   head: () =>
@@ -158,6 +159,11 @@ function PluginCard({ plugin }: { plugin: PluginRecord }) {
           ) : null}
         </CardHeader>
         <CardContent className="flex flex-wrap gap-1.5">
+          {plugin.platforms.map((p) => (
+            <Badge key={p} variant="outline">
+              {PLATFORM_LABELS[p]}
+            </Badge>
+          ))}
           {plugin.categories.map((c) => (
             <Badge key={c} variant="secondary">
               {c}

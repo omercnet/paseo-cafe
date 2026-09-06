@@ -4,11 +4,13 @@
   "path": "subagent-activity",
   "url": "https://github.com/mcowger/paseo-plugins/tree/main/subagent-activity",
   "name": "subagent-activity",
-  "description": "This Paseo `v0.7.0-beta.2` plugin adds an agent-scoped activity pane for monitoring managed Paseo descendants and provider-native subagent activity.",
+  "description": "This Paseo `v0.8` plugin adds an agent-scoped activity pane for monitoring managed Paseo descendants and provider-native subagent activity.",
   "version": "0.0.0",
   "categories": [
     "monitoring"
   ],
+  "platforms": [],
+  "caveats": [],
   "manifest": {
     "id": "subagent-activity"
   },
@@ -16,7 +18,7 @@
     "stars": 0,
     "openIssues": 0,
     "defaultBranch": "main",
-    "pushedAt": "2026-08-31T21:03:59Z",
+    "pushedAt": "2026-09-04T23:38:37Z",
     "topics": [],
     "archived": false,
     "license": null
@@ -26,8 +28,8 @@
     "avatarUrl": "https://avatars.githubusercontent.com/u/1929548?v=4",
     "url": "https://github.com/mcowger"
   },
-  "installNotes": "The plugin targets Paseo `v0.7.0-beta.2`.\n\n```bash\ncd /absolute/path/to/subagent-activity\nnpm install\npaseo plugin install \"$PWD\"\npaseo plugin reload subagent-activity\n```",
-  "installNotesHtml": "<p>The plugin targets Paseo <code>v0.7.0-beta.2</code>.</p>\n<pre><code class=\"language-bash\">cd /absolute/path/to/subagent-activity\nnpm install\npaseo plugin install \"$PWD\"\npaseo plugin reload subagent-activity\n</code></pre>",
+  "installNotes": "The plugin targets Paseo `v0.8`.\n\n```bash\ncd /absolute/path/to/subagent-activity\nnpm install\npaseo plugin install \"$PWD\"\npaseo plugin reload subagent-activity\n```",
+  "installNotesHtml": "<p>The plugin targets Paseo <code>v0.8</code>.</p>\n<pre><code class=\"language-bash\">cd /absolute/path/to/subagent-activity\nnpm install\npaseo plugin install \"$PWD\"\npaseo plugin reload subagent-activity\n</code></pre>",
   "health": {
     "manifestValid": true,
     "hasReadme": true,
@@ -40,5 +42,5 @@
     "https://raw.githubusercontent.com/mcowger/paseo-plugins/main/subagent-activity/images/subagent-activity.png"
   ],
   "videos": [],
-  "scannedAt": "2026-09-01T14:50:22.671Z"
+  "scannedAt": "2026-09-06T11:22:22.150Z"
 }

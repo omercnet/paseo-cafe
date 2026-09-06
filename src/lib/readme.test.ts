@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest"
-import { extractInstallSection, firstParagraph } from "./readme"
+import {
+  extractInstallSection,
+  extractLimitationsSection,
+  firstParagraph,
+} from "./readme"
 
 describe("firstParagraph", () => {
   it("skips headings, badges, and images to find the first real paragraph", () => {
@@ -72,5 +76,49 @@ describe("extractInstallSection", () => {
       "Just a description, no setup section.",
     ].join("\n")
     expect(extractInstallSection(readme)).toBeUndefined()
+  })
+})
+
+describe("extractLimitationsSection", () => {
+  // Modeled on the real gpambrozio/paseo-plugins/launchd-jobs README, which
+  // is exactly the motivating case: a plugin with a real, important
+  // restriction (macOS only) stated under a dedicated heading.
+  it("captures a real-world Limitations section", () => {
+    const readme = [
+      "# launchd-jobs",
+      "",
+      "## Install",
+      "npm install",
+      "",
+      "## Limitations",
+      "",
+      "- macOS only. A daemon on Linux would need a systemd user timer backend, which does not exist here.",
+      "- The daemon has to run inside your login session.",
+      "",
+      "## License",
+      "MIT",
+    ].join("\n")
+    const section = extractLimitationsSection(readme)
+    expect(section).toContain("macOS only")
+    expect(section).not.toContain("npm install")
+    expect(section).not.toContain("MIT")
+  })
+
+  it("also matches Caveats, Known issues, and Gotchas headings", () => {
+    expect(extractLimitationsSection("## Caveats\nOne thing to know.")).toBe(
+      "One thing to know."
+    )
+    expect(extractLimitationsSection("## Known issues\nA bug exists.")).toBe(
+      "A bug exists."
+    )
+    expect(extractLimitationsSection("## Gotchas\nWatch out.")).toBe(
+      "Watch out."
+    )
+  })
+
+  it("returns undefined when there is no matching heading", () => {
+    expect(
+      extractLimitationsSection("## Overview\nEverything works great.")
+    ).toBeUndefined()
   })
 })

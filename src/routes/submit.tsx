@@ -65,6 +65,18 @@ const FIELDS: { field: string; required: boolean; description: string }[] = [
     description: 'Free-form tags, e.g. ["productivity", "monitoring"].',
   },
   {
+    field: "platforms",
+    required: false,
+    description:
+      'Only if your plugin is platform-restricted, e.g. ["macos"]. Omit if it runs anywhere — this is a positive declaration, not a guarantee for what\'s left out.',
+  },
+  {
+    field: "caveats",
+    required: false,
+    description:
+      'Short, one-sentence limitations worth flagging before install, e.g. ["Requires an OpenAI API key"]. Up to 6.',
+  },
+  {
     field: "submittedBy",
     required: false,
     description: "Your GitHub username, for attribution.",
@@ -78,6 +90,8 @@ const REQUIRED_CHECKS = [
 
 const RECOMMENDED = [
   "A README with an Install, Installation, Setup, or Getting started section — we pull it into your listing verbatim.",
+  "A README with a Limitations, Caveats, or Known issues section if you have one — same deal, pulled in automatically.",
+  "If your plugin only runs on certain platforms, declare it with platforms in your registry entry — don't rely on us guessing from your README.",
   "A LICENSE file.",
   "An images/ folder with one or more screenshots.",
   "A demo video — a YouTube or Loom link, or a video dropped directly into the README — gets auto-embedded.",
@@ -89,6 +103,7 @@ const AUTO_GENERATED = [
   "The exact install command (paseo plugin add ...), derived from repo + path.",
   "Screenshots, from an images/ folder in your repo.",
   "Demo videos, detected in your README (YouTube, Loom, or an uploaded GitHub video).",
+  "A best-effort limitations/caveats excerpt, detected from your README if you didn't declare platforms/caveats yourself.",
   "Star count, last-updated date, and license, from the GitHub API.",
   "Health badges: manifest validity, README/license/tests presence, and recency.",
 ]

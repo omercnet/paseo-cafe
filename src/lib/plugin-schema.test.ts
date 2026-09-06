@@ -64,6 +64,42 @@ describe("pluginRecordSchema", () => {
     expect(result.success).toBe(true)
   })
 
+  it("defaults platforms and caveats to empty arrays when omitted", () => {
+    const result = pluginRecordSchema.parse({
+      id: "gone",
+      repo: "someone/deleted-repo",
+      url: "https://github.com/someone/deleted-repo",
+      name: "gone",
+      description: "",
+      categories: [],
+      health: validHealth,
+      images: [],
+      scannedAt: new Date().toISOString(),
+    })
+    expect(result.platforms).toEqual([])
+    expect(result.caveats).toEqual([])
+  })
+
+  it("accepts declared platforms, caveats, and a limitations excerpt", () => {
+    const result = pluginRecordSchema.safeParse({
+      id: "launchd-jobs",
+      repo: "gpambrozio/paseo-plugins",
+      path: "launchd-jobs",
+      url: "https://github.com/gpambrozio/paseo-plugins/tree/main/launchd-jobs",
+      name: "launchd-jobs",
+      description: "Schedule launchd jobs from Paseo.",
+      categories: ["automation"],
+      platforms: ["macos"],
+      caveats: ["Requires a login session"],
+      limitationsNotes: "- macOS only.",
+      limitationsNotesHtml: "<ul>\n<li>macOS only.</li>\n</ul>",
+      health: validHealth,
+      images: [],
+      scannedAt: new Date().toISOString(),
+    })
+    expect(result.success).toBe(true)
+  })
+
   it("rejects a non-JSON-compatible manifest value", () => {
     const result = pluginRecordSchema.safeParse({
       id: "bad",

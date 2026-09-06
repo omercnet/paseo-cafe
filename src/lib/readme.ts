@@ -19,19 +19,17 @@ export function firstParagraph(readme: string): string | undefined {
   return text.length > 0 ? text.slice(0, 400) : undefined
 }
 
-const INSTALL_HEADING =
-  /^(install(?:ation|ing)?|setup|getting started|quick ?start)$/i
-const MAX_INSTALL_NOTES_LENGTH = 1500
+const MAX_SECTION_LENGTH = 1500
 
 /**
- * Best-effort extraction of an "Install"/"Setup"/"Getting started" section
- * from a README: everything under the first heading whose *own* text matches
- * (not "Uninstalling", since matching is anchored to the whole heading, not
- * a substring), up to the next heading at the same or a shallower level.
- * Deliberately supplementary — the always-correct install command comes
- * from src/lib/install-command.ts, not from this parsing.
+ * Everything under the first heading whose *own* text matches `headingPattern`
+ * (not a substring match — "Uninstalling" won't match an "install" pattern),
+ * up to the next heading at the same or a shallower level.
  */
-export function extractInstallSection(readme: string): string | undefined {
+function extractSectionByHeading(
+  readme: string,
+  headingPattern: RegExp
+): string | undefined {
   const lines = readme.split("\n")
   let capturing = false
   let capturedLevel = 0
@@ -43,7 +41,7 @@ export function extractInstallSection(readme: string): string | undefined {
       const level = headingMatch[1].length
       const text = headingMatch[2].trim()
       if (capturing && level <= capturedLevel) break
-      if (!capturing && INSTALL_HEADING.test(text)) {
+      if (!capturing && headingPattern.test(text)) {
         capturing = true
         capturedLevel = level
         continue
@@ -54,7 +52,33 @@ export function extractInstallSection(readme: string): string | undefined {
 
   const text = buffer.join("\n").trim()
   if (!text) return undefined
-  return text.length > MAX_INSTALL_NOTES_LENGTH
-    ? `${text.slice(0, MAX_INSTALL_NOTES_LENGTH)}…`
+  return text.length > MAX_SECTION_LENGTH
+    ? `${text.slice(0, MAX_SECTION_LENGTH)}…`
     : text
+}
+
+const INSTALL_HEADING =
+  /^(install(?:ation|ing)?|setup|getting started|quick ?start)$/i
+
+/**
+ * Best-effort extraction of an "Install"/"Setup"/"Getting started" section
+ * from a README. Deliberately supplementary — the always-correct install
+ * command comes from src/lib/install-command.ts, not from this parsing.
+ */
+export function extractInstallSection(readme: string): string | undefined {
+  return extractSectionByHeading(readme, INSTALL_HEADING)
+}
+
+const LIMITATIONS_HEADING = /^(limitations?|caveats?|known issues?|gotchas?)$/i
+
+/**
+ * Best-effort extraction of a "Limitations"/"Caveats"/"Known issues" README
+ * section — the free, deterministic first line of defense for surfacing
+ * things like "macOS only" without needing an LLM. An author's own
+ * `platforms`/`caveats` in their registry entry (src/lib/registry-schema.ts)
+ * is authoritative when present; this is the fallback for everyone who
+ * didn't declare it there but did write it in their README.
+ */
+export function extractLimitationsSection(readme: string): string | undefined {
+  return extractSectionByHeading(readme, LIMITATIONS_HEADING)
 }

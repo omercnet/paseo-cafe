@@ -30,7 +30,8 @@ Deploying the build to GitHub Pages is deliberately not wired up yet (see the TO
 
 ## Submitting a plugin
 
-Add one file, `registry/<your-plugin-id>.json`:
+The full walkthrough (with a prefilled "create this file on GitHub" button) lives on the site
+itself at `/submit`. The short version — add one file, `registry/<your-plugin-id>.json`:
 
 ```jsonc
 {
@@ -38,6 +39,8 @@ Add one file, `registry/<your-plugin-id>.json`:
   "repo": "yourname/your-repo", // GitHub "owner/repo", not a full URL
   "path": "optional/subpath", // omit if your repo *is* the plugin
   "categories": ["productivity"], // free-form, refined over time
+  "platforms": ["macos"], // only if platform-restricted — omit if it runs anywhere
+  "caveats": ["Requires an OpenAI API key"], // short one-liners worth flagging, up to 6
   "submittedBy": "yourname"
 }
 ```
@@ -47,9 +50,10 @@ Requirements, checked automatically by CI:
 - Your repo (at `path`, if given) contains a valid `paseo-plugin.json` with an `id`.
 - `id` is unique across the registry and matches the filename.
 
-Everything else — name, description, version, license, screenshots, stars — is read from your
-repo automatically. A `README.md`, `LICENSE`, and an `images/` folder with screenshots all make
-your listing better; none are required to get in.
+Everything else — name, description, version, license, screenshots, stars, and even a
+best-effort limitations excerpt (if your README has an "Install" or "Limitations" section) —
+is read from your repo automatically. A `README.md`, `LICENSE`, and an `images/` folder with
+screenshots all make your listing better; none are required to get in.
 
 Open a PR adding your `registry/<id>.json`. If `validate.yml` passes, it's ready to merge.
 
