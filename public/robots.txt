@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://tommerty.github.io/paseo-cafe/sitemap.xml
+Sitemap: https://paseo.cafe/sitemap.xml
