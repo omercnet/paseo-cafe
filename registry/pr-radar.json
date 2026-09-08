@@ -1,0 +1,10 @@
+{
+  "id": "pr-radar",
+  "repo": "omercnet/paseo-pr-radar",
+  "categories": ["monitoring", "productivity", "github"],
+  "caveats": [
+    "Requires an authenticated gh CLI on the daemon host",
+    "Requires Paseo 0.7.0-beta.3 or newer"
+  ],
+  "submittedBy": "omercnet"
+}
