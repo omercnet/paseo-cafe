@@ -57,7 +57,7 @@
     },
     "images": [],
     "videos": [],
-    "scannedAt": "2026-09-08T10:53:31.212Z"
+    "scannedAt": "2026-09-08T10:55:59.464Z"
   },
   {
     "id": "skills",
@@ -116,7 +116,7 @@
         "url": "https://github.com/user-attachments/assets/cbb0166e-d981-4367-a5b4-5b12d2e7c14c"
       }
     ],
-    "scannedAt": "2026-09-08T10:53:28.598Z"
+    "scannedAt": "2026-09-08T10:55:56.237Z"
   },
   {
     "id": "subagent-activity",
@@ -162,7 +162,7 @@
       "https://raw.githubusercontent.com/mcowger/paseo-plugins/main/subagent-activity/images/subagent-activity.png"
     ],
     "videos": [],
-    "scannedAt": "2026-09-08T10:53:30.612Z"
+    "scannedAt": "2026-09-08T10:55:58.426Z"
   },
   {
     "id": "usage-monitor",
@@ -216,6 +216,6 @@
       "https://raw.githubusercontent.com/ABorakati/paseo-usage-monitor/main/images/composer-pills.png"
     ],
     "videos": [],
-    "scannedAt": "2026-09-08T10:53:29.519Z"
+    "scannedAt": "2026-09-08T10:55:57.498Z"
   }
 ]
