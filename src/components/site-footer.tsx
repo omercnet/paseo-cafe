@@ -25,14 +25,21 @@ export function SiteFooter() {
           page for details.
         </p>
         <p className="mt-3">
-          Build with ❤︎⁠ by{" "}
+          Build with ❤︎⁠ as a joined collaboration by{" "}
           <a
-            href="https://tommerty.click"
+            href="https://github.com/tommerty"
             target="_blank"
             rel="noreferrer"
             className="underline underline-offset-3 hover:text-foreground"
           >
             Tommerty
+          </a> & <a
+            href="https://github.com/omercnet"
+            target="_blank"
+            rel="noreferrer"
+            className="underline underline-offset-3 hover:text-foreground"
+          >
+            omercnet
           </a>
         </p>
       </div>
