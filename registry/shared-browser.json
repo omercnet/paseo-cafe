@@ -1,0 +1,10 @@
+{
+  "id": "shared-browser",
+  "repo": "omercnet/paseo-shared-browser",
+  "categories": ["browser", "productivity"],
+  "caveats": [
+    "Installs a dedicated Chromium download of roughly 180 MB on the daemon host",
+    "Downloads, uploads, clipboard sync, media permissions, and extensions are disabled"
+  ],
+  "submittedBy": "omercnet"
+}
