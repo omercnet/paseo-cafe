@@ -12,6 +12,7 @@ import {
   type DirectoryEntry,
 } from "../shared/directory"
 import { PluginDetailPage } from "./PluginDetailPage"
+import { PluginGalleryPage } from "./PluginGalleryPage"
 import { PluginRow } from "./PluginRow"
 
 const DIRECTORY_QUERY_KEY = "paseo-cafe-directory"
@@ -93,6 +94,7 @@ export function DirectorySurface({ theme, layout }: PluginSurfaceProps) {
   const [platformFilter, setPlatformFilter] = useState<ReadonlySet<string>>(new Set())
   const [installingId, setInstallingId] = useState<string | null>(null)
   const [detailEntry, setDetailEntry] = useState<DirectoryEntry | null>(null)
+  const [galleryEntry, setGalleryEntry] = useState<DirectoryEntry | null>(null)
 
   // Undefined while settings are still loading — the server falls back to
   // its own default in that case, so there's nothing to gate on here.
@@ -181,6 +183,17 @@ export function DirectorySurface({ theme, layout }: PluginSurfaceProps) {
     [theme, layout.compact]
   )
 
+  if (galleryEntry) {
+    return (
+      <PluginGalleryPage
+        entry={galleryEntry}
+        theme={theme}
+        compact={layout.compact}
+        onBack={() => setGalleryEntry(null)}
+      />
+    )
+  }
+
   if (detailEntry) {
     return (
       <PluginDetailPage
@@ -189,6 +202,7 @@ export function DirectorySurface({ theme, layout }: PluginSurfaceProps) {
         compact={layout.compact}
         installing={installingId === detailEntry.id}
         onInstall={() => installMutation.mutate(detailEntry)}
+        onOpenGallery={() => setGalleryEntry(detailEntry)}
         onBack={() => setDetailEntry(null)}
       />
     )
@@ -249,8 +263,6 @@ export function DirectorySurface({ theme, layout }: PluginSurfaceProps) {
             entry={item}
             theme={theme}
             compact={layout.compact}
-            installing={installingId === item.id}
-            onInstall={() => installMutation.mutate(item)}
             onPress={() => setDetailEntry(item)}
           />
         )}

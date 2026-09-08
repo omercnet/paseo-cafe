@@ -28,6 +28,11 @@ import {
 import { renderMarkdownToHtml } from "../src/lib/markdown.ts"
 import { extractVideos, resolveGitHubAssetVideos } from "../src/lib/videos.ts"
 import {
+  MAX_README_IMAGES,
+  extractReadmeImages,
+  resolveGitHubAssetImages,
+} from "../src/lib/images.ts"
+import {
   GitHubNotFoundError,
   fetchRawJson,
   fetchRawText,
@@ -126,7 +131,7 @@ async function scanOne(entryFile: string): Promise<PluginRecord> {
     const hasLicenseFile =
       byName.has("LICENSE") || byName.has("LICENSE.md") || byName.has("license")
     const imagesDirEntry = byName.get("images")
-    const images =
+    const imageDirEntries =
       imagesDirEntry?.type === "dir"
         ? await listDir(owner, repo, imagesDirEntry.path, branch)
         : []
@@ -159,6 +164,35 @@ async function scanOne(entryFile: string): Promise<PluginRecord> {
         )
       : []
     const videos = [...readmeVideos, ...assetVideos]
+
+    // Images aren't just whatever's in an images/ directory (that convention
+    // isn't universal — plugins.$id.tsx's own screenshots have shown up in
+    // docs/, .github/, or pasted straight into the README via GitHub's asset
+    // uploader). Same technique as videos above: extract references from the
+    // README, resolve the ambiguous GitHub asset links by content type, then
+    // turn whatever's left into an absolute raw.githubusercontent.com URL.
+    const readmeImageRefs = extractReadmeImages(readme ?? "")
+    const readmeAssetImages = readme
+      ? await resolveGitHubAssetImages(
+          readme,
+          resolveGitHubAssetContentType,
+          readmeImageRefs
+        )
+      : []
+    const resolveReadmeImageUrl = (ref: string): string => {
+      if (/^https?:\/\//i.test(ref)) return ref
+      const rootRelative = ref.startsWith("/")
+      const cleaned = ref
+        .replace(/^\.\//, "")
+        .replace(/^\//, "")
+        .replace(/[#?].*$/, "")
+      return rawUrl(owner, repo, branch, rootRelative ? cleaned : `${prefix}${cleaned}`)
+    }
+    const readmeImages = [...readmeImageRefs, ...readmeAssetImages].map(resolveReadmeImageUrl)
+    const dirImages = imageDirEntries
+      .filter((e) => e.type === "file")
+      .map((e) => rawUrl(owner, repo, branch, e.path))
+    const images = Array.from(new Set([...dirImages, ...readmeImages])).slice(0, MAX_README_IMAGES)
 
     const record: PluginRecord = {
       id: entry.id,
@@ -209,9 +243,7 @@ async function scanOne(entryFile: string): Promise<PluginRecord> {
         hasTypecheckScript: Boolean(pkg?.scripts?.typecheck),
         updatedRecently: isRecent(repoMeta.pushed_at),
       },
-      images: images
-        .filter((e) => e.type === "file")
-        .map((e) => rawUrl(owner, repo, branch, e.path)),
+      images,
       videos,
       scannedAt,
     }

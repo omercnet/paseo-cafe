@@ -1,6 +1,6 @@
 import type { PluginTheme } from "@getpaseo/plugin"
 import { Icon, ScrollView, copyText, useToast } from "@getpaseo/plugin/client/react-native"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { Image, Pressable, Text, View } from "react-native"
 import {
   HEALTH_LABELS,
@@ -9,7 +9,6 @@ import {
   stripHtml,
   type DirectoryEntry,
 } from "../shared/directory"
-import { ImageLightbox } from "./ImageLightbox"
 import { openExternal } from "./open-external"
 
 interface PluginDetailPageProps {
@@ -18,6 +17,7 @@ interface PluginDetailPageProps {
   compact: boolean
   installing: boolean
   onInstall(): void
+  onOpenGallery(): void
   onBack(): void
 }
 
@@ -26,9 +26,16 @@ function formatDate(iso: string | undefined): string | undefined {
   return iso ? iso.slice(0, 10) : undefined
 }
 
-export function PluginDetailPage({ entry, theme, compact, installing, onInstall, onBack }: PluginDetailPageProps) {
+export function PluginDetailPage({
+  entry,
+  theme,
+  compact,
+  installing,
+  onInstall,
+  onOpenGallery,
+  onBack,
+}: PluginDetailPageProps) {
   const toast = useToast()
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
   const styles = useMemo(
     () => ({
@@ -263,23 +270,30 @@ export function PluginDetailPage({ entry, theme, compact, installing, onInstall,
         ) : null}
 
         {entry.images.length > 0 ? (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.gallery}
-            contentContainerStyle={styles.galleryContent}
-          >
-            {entry.images.map((image, index) => (
-              <Pressable
-                key={image}
-                accessibilityRole="button"
-                accessibilityLabel={`View screenshot ${index + 1} of ${entry.name} full size`}
-                onPress={() => setLightboxIndex(index)}
-              >
-                <Image source={{ uri: image }} style={styles.galleryTile} resizeMode="cover" />
+          <View style={styles.section}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.gallery}
+              contentContainerStyle={styles.galleryContent}
+            >
+              {entry.images.map((image, index) => (
+                <Pressable
+                  key={image}
+                  accessibilityRole="button"
+                  accessibilityLabel={`View all screenshots of ${entry.name}, starting at image ${index + 1}`}
+                  onPress={onOpenGallery}
+                >
+                  <Image source={{ uri: image }} style={styles.galleryTile} resizeMode="cover" />
+                </Pressable>
+              ))}
+            </ScrollView>
+            {entry.images.length > 1 ? (
+              <Pressable accessibilityRole="link" onPress={onOpenGallery}>
+                <Text style={styles.linkText}>View all {entry.images.length} screenshots →</Text>
               </Pressable>
-            ))}
-          </ScrollView>
+            ) : null}
+          </View>
         ) : null}
 
         <View style={styles.section}>
@@ -356,15 +370,6 @@ export function PluginDetailPage({ entry, theme, compact, installing, onInstall,
           </Text>
         ) : null}
       </ScrollView>
-
-      <ImageLightbox
-        images={entry.images}
-        index={lightboxIndex}
-        title={entry.name}
-        theme={theme}
-        onIndexChange={setLightboxIndex}
-        onClose={() => setLightboxIndex(null)}
-      />
     </View>
   )
 }

@@ -8,12 +8,13 @@ interface PluginRowProps {
   entry: DirectoryEntry
   theme: PluginTheme
   compact: boolean
-  installing: boolean
-  onInstall(): void
   onPress(): void
 }
 
-export function PluginRow({ entry, theme, compact, installing, onInstall, onPress }: PluginRowProps) {
+// Deliberately no per-row Install button: with the whole card opening the
+// detail page (see onPress below), a nested button here fights the card's
+// own press target. Install lives on the detail page instead.
+export function PluginRow({ entry, theme, compact, onPress }: PluginRowProps) {
   const styles = useMemo(
     () => ({
       row: {
@@ -38,18 +39,8 @@ export function PluginRow({ entry, theme, compact, installing, onInstall, onPres
         backgroundColor: theme.colors.surface2,
       },
       tagText: { color: theme.colors.foregroundMuted, fontSize: 11 },
-      actionsRow: { flexDirection: "row" as const, marginTop: 4 },
-      button: {
-        alignSelf: "flex-start" as const,
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        borderRadius: 8,
-        backgroundColor: theme.colors.accent,
-        opacity: installing ? 0.6 : 1,
-      },
-      buttonText: { color: theme.colors.accentForeground, fontSize: 12, fontWeight: "600" as const },
     }),
-    [theme, compact, installing]
+    [theme, compact]
   )
 
   const tags = [...entry.categories, ...entry.platforms]
@@ -87,22 +78,6 @@ export function PluginRow({ entry, theme, compact, installing, onInstall, onPres
           ))}
         </View>
       ) : null}
-      <View style={styles.actionsRow}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Install ${entry.name}`}
-          style={styles.button}
-          disabled={installing}
-          onPress={(event) => {
-            // This button lives inside the card's own Pressable — stop the
-            // press from also bubbling up and opening the details modal.
-            event.stopPropagation()
-            onInstall()
-          }}
-        >
-          <Text style={styles.buttonText}>{installing ? "Installing…" : "Install"}</Text>
-        </Pressable>
-      </View>
     </Pressable>
   )
 }
