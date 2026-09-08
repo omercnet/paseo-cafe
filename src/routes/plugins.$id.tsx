@@ -6,6 +6,7 @@ import {
   IconCheck,
   IconExternalLink,
   IconStar,
+  IconVersions,
   IconX,
 } from "@tabler/icons-react"
 import { getPlugins } from "@/lib/plugins-data"
@@ -104,6 +105,11 @@ function PluginDetail() {
           {plugin.description || "No description available."}
         </p>
         <div className="flex flex-wrap gap-1.5">
+          {plugin.paseoVersionRequirement ? (
+            <Badge variant="default">
+              <IconVersions /> Requires Paseo {plugin.paseoVersionRequirement}
+            </Badge>
+          ) : null}
           {plugin.platforms.map((p) => (
             <Badge key={p} variant="outline">
               {PLATFORM_LABELS[p]}
@@ -157,13 +163,21 @@ function PluginDetail() {
         </AlertDescription>
       </Alert>
 
-      {plugin.platforms.length > 0 ||
+      {plugin.paseoVersionRequirement ||
+      plugin.platforms.length > 0 ||
       plugin.caveats.length > 0 ||
       plugin.limitationsNotesHtml ? (
         <Alert>
           <IconAlertTriangle />
           <AlertTitle>Caveats</AlertTitle>
           <AlertDescription>
+            {plugin.paseoVersionRequirement ? (
+              <p>
+                <strong className="text-foreground">Requires Paseo:</strong>{" "}
+                {plugin.paseoVersionRequirement} — from this plugin's own
+                paseo-plugin.json.
+              </p>
+            ) : null}
             {plugin.platforms.length > 0 ? (
               <p>
                 <strong className="text-foreground">
