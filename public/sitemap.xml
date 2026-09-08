@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://paseo.cafe/</loc><changefreq>weekly</changefreq></url>
-  <url><loc>https://paseo.cafe/plugins</loc><changefreq>daily</changefreq></url>
+  <url><loc>https://paseo.cafe/</loc><changefreq>daily</changefreq></url>
   <url><loc>https://paseo.cafe/submit</loc><changefreq>monthly</changefreq></url>
   <url><loc>https://paseo.cafe/plugins/launchd-jobs</loc><lastmod>2026-09-08</lastmod></url>
   <url><loc>https://paseo.cafe/plugins/skills</loc><lastmod>2026-09-08</lastmod></url>
