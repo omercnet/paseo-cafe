@@ -1,0 +1,82 @@
+import { Link } from "@tanstack/react-router"
+import { IconPhotoOff, IconPlayerPlayFilled, IconStar } from "@tabler/icons-react"
+import type { PluginRecord } from "@/lib/plugin-schema"
+import { Badge } from "@/components/ui/badge"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { PLATFORM_LABELS } from "@/lib/registry-schema"
+
+export function PluginCard({ plugin }: { plugin: PluginRecord }) {
+  return (
+    <Link to="/plugins/$id" params={{ id: plugin.id }} className="block">
+      <Card className="h-full pt-0 transition-shadow hover:shadow-md">
+        <div className="relative aspect-video w-full shrink-0 overflow-hidden border-b border-border bg-muted">
+          {plugin.images[0] ? (
+            <img
+              src={plugin.images[0]}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <IconPhotoOff className="size-6 text-foreground/20" />
+            </div>
+          )}
+          {plugin.videos.length > 0 ? (
+            <div
+              className="absolute inset-0 flex items-center justify-center bg-black/20"
+              aria-label="Has a demo video"
+            >
+              <IconPlayerPlayFilled className="size-8 text-white drop-shadow" />
+            </div>
+          ) : null}
+        </div>
+        <CardHeader>
+          <div className="flex items-center justify-between gap-2">
+            <CardTitle>{plugin.name}</CardTitle>
+            {plugin.repoMeta ? (
+              <span className="flex shrink-0 items-center gap-1 text-xs text-foreground/50">
+                <IconStar className="size-3.5" />
+                {plugin.repoMeta.stars}
+              </span>
+            ) : null}
+          </div>
+          <CardDescription className="line-clamp-3">
+            {plugin.description || "No description available."}
+          </CardDescription>
+          {plugin.owner ? (
+            <div className="flex items-center gap-1.5 text-xs text-foreground/50">
+              <img
+                src={plugin.owner.avatarUrl}
+                alt=""
+                className="size-4 rounded-full"
+              />
+              {plugin.owner.login}
+            </div>
+          ) : null}
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-1.5">
+          {plugin.platforms.map((p) => (
+            <Badge key={p} variant="outline">
+              {PLATFORM_LABELS[p]}
+            </Badge>
+          ))}
+          {plugin.categories.map((c) => (
+            <Badge key={c} variant="secondary">
+              {c}
+            </Badge>
+          ))}
+          {plugin.scanError ? (
+            <Badge variant="destructive">needs attention</Badge>
+          ) : null}
+        </CardContent>
+      </Card>
+    </Link>
+  )
+}
