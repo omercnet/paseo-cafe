@@ -14,9 +14,12 @@ registry/<id>.json      →  scripts/validate-registry.ts (CI, on PR)
 
 1. **`registry/*.json`** is the only thing a human writes — a pointer at a repo (see
    [Submitting a plugin](#submitting-a-plugin)).
-2. **`scripts/validate-registry.ts`** runs on every PR that touches `registry/`. It checks the
+2. **`scripts/validate-registry.ts`** runs on every PR that touches registry inputs. It checks the
    entry is well-formed, the repo/path exists, and a valid `paseo-plugin.json` manifest is there.
-   This is the entire review burden for merging — see `.github/workflows/validate.yml`.
+   CI detects affected paths, runs the app and/or companion-plugin checks, then reports one
+   aggregate `All checks passed` result. App checks cover formatting, lint, types, tests, and the
+   production build; plugin checks cover formatting, lint, and types. See
+   `.github/workflows/ci.yml` and `.github/workflows/validate.yml`.
 3. **`scripts/scan.ts`** ("plumb for paseo") runs on merge to `main` and nightly. It reads
    `paseo-plugin.json`, `package.json`, `README.md`, `LICENSE`, and `images/` straight from each
    plugin's repo, plus GitHub API metadata (stars, last commit, topics, license), and writes the
@@ -61,7 +64,7 @@ best-effort limitations excerpt (if your README has an "Install" or "Limitations
 is read from your repo automatically. A `README.md`, `LICENSE`, and an `images/` folder with
 screenshots all make your listing better; none are required to get in.
 
-Open a PR adding your `registry/<id>.json`. If `validate.yml` passes, it's ready to merge.
+Open a PR adding your `registry/<id>.json`. Once Registry validation and CI pass, it's ready to merge.
 
 ## Local development
 
