@@ -18,7 +18,7 @@ export function SiteHeader() {
         </Link>
         <nav className="flex items-center gap-4 text-sm text-foreground/70">
           <Link
-            to="/plugins"
+            to="/"
             className="hover:text-foreground"
             activeProps={{ className: "text-foreground" }}
           >
