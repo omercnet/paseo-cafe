@@ -15,6 +15,7 @@
   "caveats": [
     "Reads credentials from the CLIs and files each provider already stores locally"
   ],
+  "paseoVersionRequirement": ">=0.8.0",
   "manifest": {
     "id": "usage-monitor",
     "requirements": {
@@ -25,7 +26,7 @@
     "stars": 1,
     "openIssues": 1,
     "defaultBranch": "main",
-    "pushedAt": "2026-09-08T10:26:24Z",
+    "pushedAt": "2026-09-08T12:19:34Z",
     "topics": [],
     "archived": false,
     "license": "MIT"
@@ -47,8 +48,12 @@
   },
   "images": [
     "https://raw.githubusercontent.com/ABorakati/paseo-usage-monitor/main/images/composer-pill-card.webp",
-    "https://raw.githubusercontent.com/ABorakati/paseo-usage-monitor/main/images/composer-pills.png"
+    "https://raw.githubusercontent.com/ABorakati/paseo-usage-monitor/main/images/composer-pills.png",
+    "https://raw.githubusercontent.com/ABorakati/paseo-usage-monitor/main/docs/images/usage-limits.png",
+    "https://raw.githubusercontent.com/ABorakati/paseo-usage-monitor/main/docs/images/usage-history.png",
+    "https://raw.githubusercontent.com/ABorakati/paseo-usage-monitor/main/docs/images/composer-pills.png",
+    "https://raw.githubusercontent.com/ABorakati/paseo-usage-monitor/main/docs/images/composer-pill-card.webp"
   ],
   "videos": [],
-  "scannedAt": "2026-09-08T10:59:26.983Z"
+  "scannedAt": "2026-09-08T13:06:34.162Z"
 }

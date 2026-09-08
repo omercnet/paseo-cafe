@@ -70,6 +70,11 @@ export const pluginRecordSchema = z.object({
   // fallback for whatever the author didn't declare here.
   platforms: z.array(z.enum(PLATFORMS)).default([]),
   caveats: z.array(z.string()).default([]),
+  // The plugin's own declared `requirements.paseo` from its paseo-plugin.json
+  // (e.g. ">=0.8.0") — pulled out of `manifest` below at scan time so the
+  // site/plugin can highlight it directly instead of everyone re-parsing
+  // manifest.requirements.paseo themselves. See scripts/scan.ts.
+  paseoVersionRequirement: z.string().optional(),
   manifest: z.record(z.string(), z.json()).optional(),
   repoMeta: pluginRepoMetaSchema.optional(),
   owner: pluginOwnerSchema.optional(),
