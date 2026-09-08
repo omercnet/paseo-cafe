@@ -1,5 +1,10 @@
 import { Link } from "@tanstack/react-router"
-import { IconPhotoOff, IconPlayerPlayFilled, IconStar } from "@tabler/icons-react"
+import {
+  IconPhotoOff,
+  IconPlayerPlayFilled,
+  IconStar,
+  IconVersions,
+} from "@tabler/icons-react"
 import type { PluginRecord } from "@/lib/plugin-schema"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -62,6 +67,11 @@ export function PluginCard({ plugin }: { plugin: PluginRecord }) {
           ) : null}
         </CardHeader>
         <CardContent className="flex flex-wrap gap-1.5">
+          {plugin.paseoVersionRequirement ? (
+            <Badge variant="default">
+              <IconVersions /> Paseo {plugin.paseoVersionRequirement}
+            </Badge>
+          ) : null}
           {plugin.platforms.map((p) => (
             <Badge key={p} variant="outline">
               {PLATFORM_LABELS[p]}

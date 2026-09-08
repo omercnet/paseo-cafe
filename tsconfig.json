@@ -6,6 +6,11 @@
     "prettier.config.js",
     "vite.config.ts"
   ],
+  // plugin/ is a separate project (own package.json, tsconfig, deps, and
+  // `npm run typecheck`) that ships to a Paseo daemon, not this app's
+  // bundle — it has no business being checked with this tsconfig's DOM lib
+  // and vite/client types. Typecheck it from plugin/ itself.
+  "exclude": ["plugin"],
   "compilerOptions": {
     "target": "ES2022",
     "jsx": "react-jsx",
