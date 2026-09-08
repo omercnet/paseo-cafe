@@ -4,7 +4,9 @@
   <url><loc>https://paseo.cafe/submit</loc><changefreq>monthly</changefreq></url>
   <url><loc>https://paseo.cafe/plugins/agent-crew</loc><lastmod>2026-09-08</lastmod></url>
   <url><loc>https://paseo.cafe/plugins/agent-monitor</loc><lastmod>2026-09-08</lastmod></url>
+  <url><loc>https://paseo.cafe/plugins/paseo-dracula</loc><lastmod>2026-09-08</lastmod></url>
   <url><loc>https://paseo.cafe/plugins/pr-radar</loc><lastmod>2026-09-08</lastmod></url>
+  <url><loc>https://paseo.cafe/plugins/shared-browser</loc><lastmod>2026-09-08</lastmod></url>
   <url><loc>https://paseo.cafe/plugins/launchd-jobs</loc><lastmod>2026-09-08</lastmod></url>
   <url><loc>https://paseo.cafe/plugins/skills</loc><lastmod>2026-09-08</lastmod></url>
   <url><loc>https://paseo.cafe/plugins/subagent-activity</loc><lastmod>2026-09-07</lastmod></url>

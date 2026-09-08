@@ -59,7 +59,7 @@
       "https://raw.githubusercontent.com/omercnet/paseo-agent-crew/main/docs/images/agent-crew-action.png"
     ],
     "videos": [],
-    "scannedAt": "2026-09-08T14:07:13.496Z"
+    "scannedAt": "2026-09-08T14:09:12.961Z"
   },
   {
     "id": "agent-monitor",
@@ -119,7 +119,68 @@
       "https://raw.githubusercontent.com/omercnet/paseo-agent-monitor/main/docs/images/agent-monitor-settings.png"
     ],
     "videos": [],
-    "scannedAt": "2026-09-08T14:07:14.102Z"
+    "scannedAt": "2026-09-08T14:09:13.343Z"
+  },
+  {
+    "id": "paseo-dracula",
+    "repo": "omercnet/paseo-dracula",
+    "url": "https://github.com/omercnet/paseo-dracula",
+    "name": "@omercnet/paseo-dracula",
+    "description": "Dracula Classic and Alucard Classic themes for Paseo.",
+    "version": "0.2.1",
+    "author": "Omer Cohen",
+    "license": "MIT",
+    "categories": [
+      "theme"
+    ],
+    "platforms": [],
+    "caveats": [
+      "Requires Paseo 0.7.2 or newer"
+    ],
+    "paseoVersionRequirement": "^0.8.0",
+    "manifest": {
+      "id": "paseo-dracula",
+      "requirements": {
+        "paseo": "^0.8.0"
+      }
+    },
+    "repoMeta": {
+      "stars": 0,
+      "openIssues": 1,
+      "defaultBranch": "main",
+      "pushedAt": "2026-09-08T12:39:13Z",
+      "topics": [
+        "dracula",
+        "dracula-theme",
+        "paseo",
+        "paseo-plugin",
+        "theme"
+      ],
+      "archived": false,
+      "license": "MIT"
+    },
+    "owner": {
+      "login": "omercnet",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/639682?v=4",
+      "url": "https://github.com/omercnet"
+    },
+    "installNotes": "See [INSTALL.md](./INSTALL.md) for Git installation, activation, updates, removal, and local\ndevelopment installation.",
+    "installNotesHtml": "<p>See <a href=\"./INSTALL.md\">INSTALL.md</a> for Git installation, activation, updates, removal, and local\ndevelopment installation.</p>",
+    "health": {
+      "manifestValid": true,
+      "hasReadme": true,
+      "hasLicense": true,
+      "hasTests": true,
+      "hasTypecheckScript": true,
+      "updatedRecently": true
+    },
+    "images": [
+      "https://raw.githubusercontent.com/omercnet/paseo-dracula/main/screenshot.png",
+      "https://raw.githubusercontent.com/omercnet/paseo-dracula/main/screenshot-alucard.png",
+      "https://github.com/omercnet.png?size=100"
+    ],
+    "videos": [],
+    "scannedAt": "2026-09-08T14:09:08.220Z"
   },
   {
     "id": "pr-radar",
@@ -181,7 +242,89 @@
       "https://raw.githubusercontent.com/omercnet/paseo-pr-radar/main/docs/images/pr-radar-github-inbox-compact.png"
     ],
     "videos": [],
-    "scannedAt": "2026-09-08T14:07:11.346Z"
+    "scannedAt": "2026-09-08T14:09:11.570Z"
+  },
+  {
+    "id": "shared-browser",
+    "repo": "omercnet/paseo-shared-browser",
+    "url": "https://github.com/omercnet/paseo-shared-browser",
+    "name": "@omercnet/paseo-shared-browser",
+    "description": "One real Chromium session per Paseo workspace, shared live across every connected client.",
+    "version": "0.2.1",
+    "author": "Omer Cohen",
+    "license": "MIT",
+    "categories": [
+      "browser",
+      "productivity"
+    ],
+    "platforms": [],
+    "caveats": [
+      "Installs a dedicated Chromium download of roughly 180 MB on the daemon host",
+      "Downloads, uploads, clipboard sync, media permissions, and extensions are disabled"
+    ],
+    "paseoVersionRequirement": "^0.8.0",
+    "manifest": {
+      "id": "shared-browser",
+      "requirements": {
+        "paseo": "^0.8.0"
+      },
+      "build": [
+        [
+          "npm",
+          "ci"
+        ],
+        [
+          "npm",
+          "run",
+          "prepare:runtime"
+        ],
+        [
+          "npm",
+          "exec",
+          "--",
+          "playwright",
+          "install",
+          "chromium"
+        ]
+      ]
+    },
+    "repoMeta": {
+      "stars": 0,
+      "openIssues": 1,
+      "defaultBranch": "main",
+      "pushedAt": "2026-09-08T14:06:09Z",
+      "topics": [
+        "browser",
+        "chromium",
+        "coding-agents",
+        "paseo",
+        "paseo-plugin",
+        "remote-browser"
+      ],
+      "archived": false,
+      "license": "MIT"
+    },
+    "owner": {
+      "login": "omercnet",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/639682?v=4",
+      "url": "https://github.com/omercnet"
+    },
+    "installNotes": "Install on the Paseo daemon host with plugins enabled:\n\n```bash\npaseo plugin add omercnet/paseo-shared-browser\npaseo plugin ls\n```\n\nOr install a published archive:\n\n```bash\ngh release download --repo omercnet/paseo-shared-browser --pattern 'shared-browser-*.zip'\nunzip shared-browser-v*.zip\npaseo plugin install \"$PWD/shared-browser\"\n```\n\nInstallation runs the manifest `build` steps: `npm ci`, `npm run prepare:runtime`, and\n`playwright install chromium`. The Chromium download is roughly 180 MB and needs network access on\nthe daemon host.\n\nOpen a workspace, search the Command Center for **Open Shared Browser**, or tap the **Shared\nBrowser** composer pill that appears while a workspace session is open.",
+    "installNotesHtml": "<p>Install on the Paseo daemon host with plugins enabled:</p>\n<pre><code class=\"language-bash\">paseo plugin add omercnet/paseo-shared-browser\npaseo plugin ls\n</code></pre>\n<p>Or install a published archive:</p>\n<pre><code class=\"language-bash\">gh release download --repo omercnet/paseo-shared-browser --pattern 'shared-browser-*.zip'\nunzip shared-browser-v*.zip\npaseo plugin install \"$PWD/shared-browser\"\n</code></pre>\n<p>Installation runs the manifest <code>build</code> steps: <code>npm ci</code>, <code>npm run prepare:runtime</code>, and\n<code>playwright install chromium</code>. The Chromium download is roughly 180 MB and needs network access on\nthe daemon host.</p>\n<p>Open a workspace, search the Command Center for <strong>Open Shared Browser</strong>, or tap the <strong>Shared\nBrowser</strong> composer pill that appears while a workspace session is open.</p>",
+    "health": {
+      "manifestValid": true,
+      "hasReadme": true,
+      "hasLicense": true,
+      "hasTests": true,
+      "hasTypecheckScript": true,
+      "updatedRecently": true
+    },
+    "images": [
+      "https://raw.githubusercontent.com/omercnet/paseo-shared-browser/main/docs/images/shared-browser-wide.png",
+      "https://raw.githubusercontent.com/omercnet/paseo-shared-browser/main/docs/images/shared-browser-compact.png"
+    ],
+    "videos": [],
+    "scannedAt": "2026-09-08T14:09:10.901Z"
   },
   {
     "id": "launchd-jobs",
@@ -243,7 +386,7 @@
       "https://raw.githubusercontent.com/gpambrozio/paseo-plugins/main/launchd-jobs/docs/screenshot.png"
     ],
     "videos": [],
-    "scannedAt": "2026-09-08T14:07:14.998Z"
+    "scannedAt": "2026-09-08T14:09:13.741Z"
   },
   {
     "id": "skills",
@@ -302,7 +445,7 @@
         "url": "https://github.com/user-attachments/assets/cbb0166e-d981-4367-a5b4-5b12d2e7c14c"
       }
     ],
-    "scannedAt": "2026-09-08T14:07:10.616Z"
+    "scannedAt": "2026-09-08T14:09:10.426Z"
   },
   {
     "id": "subagent-activity",
@@ -348,7 +491,7 @@
       "https://raw.githubusercontent.com/mcowger/paseo-plugins/main/subagent-activity/images/subagent-activity.png"
     ],
     "videos": [],
-    "scannedAt": "2026-09-08T14:07:12.817Z"
+    "scannedAt": "2026-09-08T14:09:12.517Z"
   },
   {
     "id": "usage-monitor",
@@ -407,7 +550,7 @@
       "https://raw.githubusercontent.com/ABorakati/paseo-usage-monitor/main/docs/images/composer-pill-card.webp"
     ],
     "videos": [],
-    "scannedAt": "2026-09-08T14:07:12.097Z"
+    "scannedAt": "2026-09-08T14:09:11.935Z"
   },
   {
     "id": "workspace-activity",
@@ -460,6 +603,6 @@
       "https://raw.githubusercontent.com/ABorakati/paseo-workspace-activity/main/docs/images/tasks.png"
     ],
     "videos": [],
-    "scannedAt": "2026-09-08T14:07:08.060Z"
+    "scannedAt": "2026-09-08T14:09:09.993Z"
   }
 ]
