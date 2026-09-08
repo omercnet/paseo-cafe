@@ -1,0 +1,11 @@
+{
+  "id": "agent-monitor",
+  "repo": "omercnet/paseo-agent-monitor",
+  "categories": ["monitoring", "productivity"],
+  "platforms": ["macos", "linux", "windows"],
+  "caveats": [
+    "Requires Paseo 0.7.0-beta.1 or newer; navigation requires a 0.7.0-beta.3 or newer client",
+    "Web and desktop only until Paseo issue #3930 is fixed"
+  ],
+  "submittedBy": "omercnet"
+}
