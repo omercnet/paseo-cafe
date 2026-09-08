@@ -1,5 +1,189 @@
 [
   {
+    "id": "agent-crew",
+    "repo": "omercnet/paseo-agent-crew",
+    "url": "https://github.com/omercnet/paseo-agent-crew",
+    "name": "@omercnet/paseo-agent-crew",
+    "description": "A Paseo Explorer panel for visualizing and controlling every managed agent crew in a workspace.",
+    "version": "0.2.1",
+    "author": "Omer Cohen",
+    "license": "MIT",
+    "categories": [
+      "monitoring",
+      "productivity",
+      "orchestration"
+    ],
+    "platforms": [],
+    "caveats": [
+      "Requires Paseo 0.7.2 or newer"
+    ],
+    "paseoVersionRequirement": "^0.8.0",
+    "manifest": {
+      "id": "agent-crew",
+      "requirements": {
+        "paseo": "^0.8.0"
+      }
+    },
+    "repoMeta": {
+      "stars": 1,
+      "openIssues": 1,
+      "defaultBranch": "main",
+      "pushedAt": "2026-09-08T14:04:45Z",
+      "topics": [
+        "agent-monitoring",
+        "coding-agents",
+        "orchestration",
+        "paseo",
+        "paseo-plugin"
+      ],
+      "archived": false,
+      "license": "MIT"
+    },
+    "owner": {
+      "login": "omercnet",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/639682?v=4",
+      "url": "https://github.com/omercnet"
+    },
+    "installNotes": "Paseo plugins are trusted, unsandboxed code. Review the source before installing it.\n\nFrom GitHub:\n\n```bash\npaseo plugin add omercnet/paseo-agent-crew\n```\n\nFrom a local checkout on the Paseo daemon host:\n\n```bash\ngit clone https://github.com/omercnet/paseo-agent-crew.git\ncd paseo-agent-crew\nbun install --frozen-lockfile\npaseo plugin install \"$PWD\"\n```\n\nOpen a workspace, choose **New tab** in Explorer, then select **Agent Crew**. The **Open Agent Crew**\nCommand Center action opens it directly.",
+    "installNotesHtml": "<p>Paseo plugins are trusted, unsandboxed code. Review the source before installing it.</p>\n<p>From GitHub:</p>\n<pre><code class=\"language-bash\">paseo plugin add omercnet/paseo-agent-crew\n</code></pre>\n<p>From a local checkout on the Paseo daemon host:</p>\n<pre><code class=\"language-bash\">git clone https://github.com/omercnet/paseo-agent-crew.git\ncd paseo-agent-crew\nbun install --frozen-lockfile\npaseo plugin install \"$PWD\"\n</code></pre>\n<p>Open a workspace, choose <strong>New tab</strong> in Explorer, then select <strong>Agent Crew</strong>. The <strong>Open Agent Crew</strong>\nCommand Center action opens it directly.</p>",
+    "health": {
+      "manifestValid": true,
+      "hasReadme": true,
+      "hasLicense": true,
+      "hasTests": true,
+      "hasTypecheckScript": true,
+      "updatedRecently": true
+    },
+    "images": [
+      "https://raw.githubusercontent.com/omercnet/paseo-agent-crew/main/docs/images/agent-crew-overview.png",
+      "https://raw.githubusercontent.com/omercnet/paseo-agent-crew/main/docs/images/agent-crew-action.png"
+    ],
+    "videos": [],
+    "scannedAt": "2026-09-08T14:07:13.496Z"
+  },
+  {
+    "id": "agent-monitor",
+    "repo": "omercnet/paseo-agent-monitor",
+    "url": "https://github.com/omercnet/paseo-agent-monitor",
+    "name": "@omercnet/paseo-agent-monitor",
+    "description": "A Paseo plugin that provides a host-wide agent triage roster.",
+    "version": "0.4.0",
+    "author": "Omer Cohen",
+    "license": "MIT",
+    "categories": [
+      "monitoring",
+      "productivity"
+    ],
+    "platforms": [
+      "macos",
+      "linux",
+      "windows"
+    ],
+    "caveats": [
+      "Requires Paseo 0.7.0-beta.1 or newer; navigation requires a 0.7.0-beta.3 or newer client",
+      "Web and desktop only until Paseo issue #3930 is fixed"
+    ],
+    "paseoVersionRequirement": "^0.8.0",
+    "manifest": {
+      "id": "agent-monitor",
+      "requirements": {
+        "paseo": "^0.8.0"
+      }
+    },
+    "repoMeta": {
+      "stars": 2,
+      "openIssues": 1,
+      "defaultBranch": "main",
+      "pushedAt": "2026-09-08T12:48:40Z",
+      "topics": [],
+      "archived": false,
+      "license": "MIT"
+    },
+    "owner": {
+      "login": "omercnet",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/639682?v=4",
+      "url": "https://github.com/omercnet"
+    },
+    "installNotes": "Requires a compatible Paseo 0.8.x release, including 0.8 prereleases. The manifest declares\n`requirements.paseo` as `^0.8.0`, and the development SDK is pinned to `0.8.0-beta.1`.\n\nInstall straight from this repository on the daemon host:\n\n```bash\npaseo plugin add omercnet/paseo-agent-monitor\npaseo plugin update agent-monitor\n```\n\nGit installs track the default branch and run no package manager; the plugin has no runtime\ndependencies. For an air-gapped host, download the `agent-monitor-vX.Y.Z.zip` asset from a GitHub\nrelease, extract it, and install the top-level directory:\n\n```bash\nunzip agent-monitor-vX.Y.Z.zip\npaseo plugin install \"$PWD/agent-monitor\"\n```",
+    "installNotesHtml": "<p>Requires a compatible Paseo 0.8.x release, including 0.8 prereleases. The manifest declares\n<code>requirements.paseo</code> as <code>^0.8.0</code>, and the development SDK is pinned to <code>0.8.0-beta.1</code>.</p>\n<p>Install straight from this repository on the daemon host:</p>\n<pre><code class=\"language-bash\">paseo plugin add omercnet/paseo-agent-monitor\npaseo plugin update agent-monitor\n</code></pre>\n<p>Git installs track the default branch and run no package manager; the plugin has no runtime\ndependencies. For an air-gapped host, download the <code>agent-monitor-vX.Y.Z.zip</code> asset from a GitHub\nrelease, extract it, and install the top-level directory:</p>\n<pre><code class=\"language-bash\">unzip agent-monitor-vX.Y.Z.zip\npaseo plugin install \"$PWD/agent-monitor\"\n</code></pre>",
+    "health": {
+      "manifestValid": true,
+      "hasReadme": true,
+      "hasLicense": true,
+      "hasTests": true,
+      "hasTypecheckScript": true,
+      "updatedRecently": true
+    },
+    "images": [
+      "https://raw.githubusercontent.com/omercnet/paseo-agent-monitor/main/docs/images/agent-monitor-roster.png",
+      "https://raw.githubusercontent.com/omercnet/paseo-agent-monitor/main/docs/images/agent-monitor-settings.png"
+    ],
+    "videos": [],
+    "scannedAt": "2026-09-08T14:07:14.102Z"
+  },
+  {
+    "id": "pr-radar",
+    "repo": "omercnet/paseo-pr-radar",
+    "url": "https://github.com/omercnet/paseo-pr-radar",
+    "name": "@omercnet/paseo-pr-radar",
+    "description": "A viewer-aware delivery queue for pull requests linked to Paseo workspaces.",
+    "version": "0.3.2",
+    "author": "Omer Cohen",
+    "license": "MIT",
+    "categories": [
+      "monitoring",
+      "productivity",
+      "github"
+    ],
+    "platforms": [],
+    "caveats": [
+      "Requires an authenticated gh CLI on the daemon host",
+      "Requires Paseo 0.7.0-beta.3 or newer"
+    ],
+    "paseoVersionRequirement": "^0.8.0",
+    "manifest": {
+      "id": "pr-radar",
+      "requirements": {
+        "paseo": "^0.8.0"
+      }
+    },
+    "repoMeta": {
+      "stars": 0,
+      "openIssues": 1,
+      "defaultBranch": "main",
+      "pushedAt": "2026-09-08T12:37:41Z",
+      "topics": [
+        "coding-agents",
+        "paseo",
+        "paseo-plugin",
+        "pull-requests"
+      ],
+      "archived": false,
+      "license": "MIT"
+    },
+    "owner": {
+      "login": "omercnet",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/639682?v=4",
+      "url": "https://github.com/omercnet"
+    },
+    "installNotes": "Download the `pr-radar-vX.Y.Z.zip` asset from a GitHub release on the Paseo daemon host, then extract and install its top-level directory:\n\n```bash\nunzip pr-radar-vX.Y.Z.zip\ncd pr-radar\nbun install --frozen-lockfile\nbunx paseo plugin install \"$PWD\"\n```\n\nThe daemon must have plugins enabled and `gh` authenticated for GitHub viewer-aware triage.",
+    "installNotesHtml": "<p>Download the <code>pr-radar-vX.Y.Z.zip</code> asset from a GitHub release on the Paseo daemon host, then extract and install its top-level directory:</p>\n<pre><code class=\"language-bash\">unzip pr-radar-vX.Y.Z.zip\ncd pr-radar\nbun install --frozen-lockfile\nbunx paseo plugin install \"$PWD\"\n</code></pre>\n<p>The daemon must have plugins enabled and <code>gh</code> authenticated for GitHub viewer-aware triage.</p>",
+    "health": {
+      "manifestValid": true,
+      "hasReadme": true,
+      "hasLicense": true,
+      "hasTests": true,
+      "hasTypecheckScript": true,
+      "updatedRecently": true
+    },
+    "images": [
+      "https://raw.githubusercontent.com/omercnet/paseo-pr-radar/main/docs/images/pr-radar-github-inbox-wide.png",
+      "https://raw.githubusercontent.com/omercnet/paseo-pr-radar/main/docs/images/pr-radar-github-inbox-compact.png"
+    ],
+    "videos": [],
+    "scannedAt": "2026-09-08T14:07:11.346Z"
+  },
+  {
     "id": "launchd-jobs",
     "repo": "gpambrozio/paseo-plugins",
     "path": "launchd-jobs",
@@ -59,7 +243,7 @@
       "https://raw.githubusercontent.com/gpambrozio/paseo-plugins/main/launchd-jobs/docs/screenshot.png"
     ],
     "videos": [],
-    "scannedAt": "2026-09-08T13:19:01.622Z"
+    "scannedAt": "2026-09-08T14:07:14.998Z"
   },
   {
     "id": "skills",
@@ -118,7 +302,7 @@
         "url": "https://github.com/user-attachments/assets/cbb0166e-d981-4367-a5b4-5b12d2e7c14c"
       }
     ],
-    "scannedAt": "2026-09-08T13:18:58.232Z"
+    "scannedAt": "2026-09-08T14:07:10.616Z"
   },
   {
     "id": "subagent-activity",
@@ -164,7 +348,7 @@
       "https://raw.githubusercontent.com/mcowger/paseo-plugins/main/subagent-activity/images/subagent-activity.png"
     ],
     "videos": [],
-    "scannedAt": "2026-09-08T13:19:00.352Z"
+    "scannedAt": "2026-09-08T14:07:12.817Z"
   },
   {
     "id": "usage-monitor",
@@ -223,7 +407,7 @@
       "https://raw.githubusercontent.com/ABorakati/paseo-usage-monitor/main/docs/images/composer-pill-card.webp"
     ],
     "videos": [],
-    "scannedAt": "2026-09-08T13:18:59.291Z"
+    "scannedAt": "2026-09-08T14:07:12.097Z"
   },
   {
     "id": "workspace-activity",
@@ -276,6 +460,6 @@
       "https://raw.githubusercontent.com/ABorakati/paseo-workspace-activity/main/docs/images/tasks.png"
     ],
     "videos": [],
-    "scannedAt": "2026-09-08T13:18:55.518Z"
+    "scannedAt": "2026-09-08T14:07:08.060Z"
   }
 ]
