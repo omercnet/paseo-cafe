@@ -55,9 +55,11 @@
       "hasTypecheckScript": true,
       "updatedRecently": true
     },
-    "images": [],
+    "images": [
+      "https://raw.githubusercontent.com/gpambrozio/paseo-plugins/main/launchd-jobs/docs/screenshot.png"
+    ],
     "videos": [],
-    "scannedAt": "2026-09-08T10:59:28.654Z"
+    "scannedAt": "2026-09-08T13:06:36.130Z"
   },
   {
     "id": "skills",
@@ -116,7 +118,7 @@
         "url": "https://github.com/user-attachments/assets/cbb0166e-d981-4367-a5b4-5b12d2e7c14c"
       }
     ],
-    "scannedAt": "2026-09-08T10:59:25.920Z"
+    "scannedAt": "2026-09-08T13:06:33.203Z"
   },
   {
     "id": "subagent-activity",
@@ -162,7 +164,7 @@
       "https://raw.githubusercontent.com/mcowger/paseo-plugins/main/subagent-activity/images/subagent-activity.png"
     ],
     "videos": [],
-    "scannedAt": "2026-09-08T10:59:27.769Z"
+    "scannedAt": "2026-09-08T13:06:35.057Z"
   },
   {
     "id": "usage-monitor",
@@ -181,6 +183,7 @@
     "caveats": [
       "Reads credentials from the CLIs and files each provider already stores locally"
     ],
+    "paseoVersionRequirement": ">=0.8.0",
     "manifest": {
       "id": "usage-monitor",
       "requirements": {
@@ -191,7 +194,7 @@
       "stars": 1,
       "openIssues": 1,
       "defaultBranch": "main",
-      "pushedAt": "2026-09-08T10:26:24Z",
+      "pushedAt": "2026-09-08T12:19:34Z",
       "topics": [],
       "archived": false,
       "license": "MIT"
@@ -213,10 +216,14 @@
     },
     "images": [
       "https://raw.githubusercontent.com/ABorakati/paseo-usage-monitor/main/images/composer-pill-card.webp",
-      "https://raw.githubusercontent.com/ABorakati/paseo-usage-monitor/main/images/composer-pills.png"
+      "https://raw.githubusercontent.com/ABorakati/paseo-usage-monitor/main/images/composer-pills.png",
+      "https://raw.githubusercontent.com/ABorakati/paseo-usage-monitor/main/docs/images/usage-limits.png",
+      "https://raw.githubusercontent.com/ABorakati/paseo-usage-monitor/main/docs/images/usage-history.png",
+      "https://raw.githubusercontent.com/ABorakati/paseo-usage-monitor/main/docs/images/composer-pills.png",
+      "https://raw.githubusercontent.com/ABorakati/paseo-usage-monitor/main/docs/images/composer-pill-card.webp"
     ],
     "videos": [],
-    "scannedAt": "2026-09-08T10:59:26.983Z"
+    "scannedAt": "2026-09-08T13:06:34.162Z"
   },
   {
     "id": "workspace-activity",
@@ -233,6 +240,7 @@
     ],
     "platforms": [],
     "caveats": [],
+    "paseoVersionRequirement": ">=0.8.0",
     "manifest": {
       "id": "workspace-activity",
       "requirements": {
@@ -263,8 +271,11 @@
       "hasTypecheckScript": true,
       "updatedRecently": true
     },
-    "images": [],
+    "images": [
+      "https://raw.githubusercontent.com/ABorakati/paseo-workspace-activity/main/docs/images/agent-monitor.png",
+      "https://raw.githubusercontent.com/ABorakati/paseo-workspace-activity/main/docs/images/tasks.png"
+    ],
     "videos": [],
-    "scannedAt": "2026-09-08T10:59:22.910Z"
+    "scannedAt": "2026-09-08T13:06:32.133Z"
   }
 ]
