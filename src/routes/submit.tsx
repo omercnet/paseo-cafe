@@ -267,7 +267,7 @@ function SubmitPage() {
       <Separator className="my-8" />
 
       <div className="flex flex-wrap items-center gap-4">
-        <Button nativeButton={false} render={<Link to="/plugins" />}>
+        <Button nativeButton={false} render={<Link to="/" />}>
           Browse existing plugins <IconArrowRight className="size-4" />
         </Button>
         <a

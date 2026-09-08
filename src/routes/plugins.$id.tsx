@@ -65,7 +65,7 @@ function PluginDetail() {
         }}
       />
       <Link
-        to="/plugins"
+        to="/"
         className="flex w-fit items-center gap-1 text-sm text-foreground/60 hover:text-foreground"
       >
         <IconArrowLeft className="size-4" /> All plugins
@@ -162,7 +162,7 @@ function PluginDetail() {
       plugin.limitationsNotesHtml ? (
         <Alert>
           <IconAlertTriangle />
-          <AlertTitle>Limitations</AlertTitle>
+          <AlertTitle>Caveats</AlertTitle>
           <AlertDescription>
             {plugin.platforms.length > 0 ? (
               <p>

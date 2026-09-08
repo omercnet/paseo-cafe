@@ -46,11 +46,7 @@ export const Route = createRootRoute({
         <Button nativeButton={false} render={<Link to="/" />}>
           Go home
         </Button>
-        <Button
-          nativeButton={false}
-          variant="outline"
-          render={<Link to="/plugins" />}
-        >
+        <Button nativeButton={false} variant="outline" render={<Link to="/" />}>
           Browse plugins
         </Button>
       </div>

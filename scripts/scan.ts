@@ -247,8 +247,7 @@ async function writeOgImage(
 
 function writeSitemap(records: PluginRecord[]) {
   const staticPages = [
-    { path: "/", changefreq: "weekly" },
-    { path: "/plugins", changefreq: "daily" },
+    { path: "/", changefreq: "daily" },
     { path: "/submit", changefreq: "monthly" },
   ]
 
