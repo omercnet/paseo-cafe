@@ -144,6 +144,19 @@ async function scanOne(entryFile: string): Promise<PluginRecord> {
       typeof manifest?.description === "string"
         ? manifest.description
         : undefined
+    // e.g. `"requirements": { "paseo": ">=0.8.0" }` — surfaced as its own
+    // field (see pluginRecordSchema) rather than left buried in `manifest`,
+    // so it gets the same "highlight before installing" treatment as a
+    // platform restriction instead of only showing up if someone reads the
+    // manifest JSON themselves.
+    const manifestRequirements =
+      manifest?.requirements && typeof manifest.requirements === "object"
+        ? (manifest.requirements as Record<string, unknown>)
+        : undefined
+    const paseoVersionRequirement =
+      typeof manifestRequirements?.paseo === "string"
+        ? manifestRequirements.paseo
+        : undefined
 
     const installNotes = extractInstallSection(readme ?? "")
     const installNotesHtml = installNotes
@@ -211,6 +224,7 @@ async function scanOne(entryFile: string): Promise<PluginRecord> {
       categories: entry.categories,
       platforms: entry.platforms,
       caveats: entry.caveats,
+      paseoVersionRequirement,
       // raw JSON.parse output is always JSON-compatible; the broader
       // Record<string, unknown> return type of fetchRawJson just isn't
       // narrow enough for the schema's JSON-value type.

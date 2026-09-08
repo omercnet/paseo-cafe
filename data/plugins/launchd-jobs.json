@@ -54,7 +54,9 @@
     "hasTypecheckScript": true,
     "updatedRecently": true
   },
-  "images": [],
+  "images": [
+    "https://raw.githubusercontent.com/gpambrozio/paseo-plugins/main/launchd-jobs/docs/screenshot.png"
+  ],
   "videos": [],
-  "scannedAt": "2026-09-08T10:59:28.654Z"
+  "scannedAt": "2026-09-08T12:48:01.593Z"
 }

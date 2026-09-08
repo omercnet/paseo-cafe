@@ -39,11 +39,19 @@ export function PluginRow({ entry, theme, compact, onPress }: PluginRowProps) {
         backgroundColor: theme.colors.surface2,
       },
       tagText: { color: theme.colors.foregroundMuted, fontSize: 11 },
+      requirementTag: {
+        borderRadius: 999,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        backgroundColor: theme.colors.accent,
+      },
+      requirementTagText: { color: theme.colors.accentForeground, fontSize: 11, fontWeight: "600" as const },
     }),
     [theme, compact]
   )
 
   const tags = [...entry.categories, ...entry.platforms]
+  const hasTagsRow = tags.length > 0 || !!entry.paseoVersionRequirement
 
   return (
     <Pressable
@@ -69,8 +77,13 @@ export function PluginRow({ entry, theme, compact, onPress }: PluginRowProps) {
           {entry.description}
         </Text>
       ) : null}
-      {tags.length > 0 ? (
+      {hasTagsRow ? (
         <View style={styles.tagsRow}>
+          {entry.paseoVersionRequirement ? (
+            <View style={styles.requirementTag}>
+              <Text style={styles.requirementTagText}>Paseo {entry.paseoVersionRequirement}</Text>
+            </View>
+          ) : null}
           {tags.map((tag) => (
             <View key={tag} style={styles.tag}>
               <Text style={styles.tagText}>{tag}</Text>

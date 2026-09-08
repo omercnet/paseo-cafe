@@ -62,6 +62,13 @@ export function PluginDetailPage({
       tagsRow: { flexDirection: "row" as const, flexWrap: "wrap" as const, gap: 6 },
       tag: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, backgroundColor: theme.colors.surface2 },
       tagText: { color: theme.colors.foregroundMuted, fontSize: 11 },
+      requirementTag: {
+        borderRadius: 999,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        backgroundColor: theme.colors.accent,
+      },
+      requirementTagText: { color: theme.colors.accentForeground, fontSize: 11, fontWeight: "600" as const },
       metaRow: { flexDirection: "row" as const, flexWrap: "wrap" as const, gap: 14, alignItems: "center" as const },
       metaItem: { flexDirection: "row" as const, alignItems: "center" as const, gap: 4 },
       metaText: { color: theme.colors.foregroundMuted, fontSize: 12 },
@@ -163,7 +170,8 @@ export function PluginDetailPage({
   const tags = [...entry.categories, ...entry.platforms]
   const limitationsText = entry.limitationsNotesHtml ? stripHtml(entry.limitationsNotesHtml) : undefined
   const installNotesText = entry.installNotesHtml ? stripHtml(entry.installNotesHtml) : undefined
-  const hasCaveatsSection = entry.platforms.length > 0 || entry.caveats.length > 0 || !!limitationsText
+  const hasCaveatsSection =
+    !!entry.paseoVersionRequirement || entry.platforms.length > 0 || entry.caveats.length > 0 || !!limitationsText
   const health = entry.health
 
   return (
@@ -191,8 +199,13 @@ export function PluginDetailPage({
 
         {entry.description ? <Text style={styles.description}>{entry.description}</Text> : null}
 
-        {tags.length > 0 ? (
+        {tags.length > 0 || entry.paseoVersionRequirement ? (
           <View style={styles.tagsRow}>
+            {entry.paseoVersionRequirement ? (
+              <View style={styles.requirementTag}>
+                <Text style={styles.requirementTagText}>Paseo {entry.paseoVersionRequirement}</Text>
+              </View>
+            ) : null}
             {tags.map((tag) => (
               <View key={tag} style={styles.tag}>
                 <Text style={styles.tagText}>{tag}</Text>
@@ -246,6 +259,11 @@ export function PluginDetailPage({
               <Icon name="AlertTriangle" size={14} color={theme.colors.statusWarning} />
               <Text style={styles.alertTitle}>Caveats</Text>
             </View>
+            {entry.paseoVersionRequirement ? (
+              <Text style={styles.alertBody}>
+                Requires Paseo {entry.paseoVersionRequirement} — from this plugin's own paseo-plugin.json.
+              </Text>
+            ) : null}
             {entry.platforms.length > 0 ? (
               <Text style={styles.alertBody}>Supported platforms: {entry.platforms.join(", ")}.</Text>
             ) : null}

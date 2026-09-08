@@ -13,6 +13,7 @@
   ],
   "platforms": [],
   "caveats": [],
+  "paseoVersionRequirement": ">=0.8.0",
   "manifest": {
     "id": "workspace-activity",
     "requirements": {
@@ -43,7 +44,10 @@
     "hasTypecheckScript": true,
     "updatedRecently": true
   },
-  "images": [],
+  "images": [
+    "https://raw.githubusercontent.com/ABorakati/paseo-workspace-activity/main/docs/images/agent-monitor.png",
+    "https://raw.githubusercontent.com/ABorakati/paseo-workspace-activity/main/docs/images/tasks.png"
+  ],
   "videos": [],
-  "scannedAt": "2026-09-08T10:59:22.910Z"
+  "scannedAt": "2026-09-08T12:48:05.949Z"
 }

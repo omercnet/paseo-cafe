@@ -40,6 +40,11 @@ export const directoryEntrySchema = z.object({
   platforms: z.array(z.string()).default([]),
   caveats: z.array(z.string()).default([]),
   license: z.string().optional(),
+  // e.g. ">=0.8.0" — the plugin's own `requirements.paseo` from its
+  // paseo-plugin.json (see scripts/scan.ts on the site). Highlighted the
+  // same way as a platform restriction, not left for someone to dig out of
+  // the README or the manifest themselves.
+  paseoVersionRequirement: z.string().optional(),
   images: z.array(z.string()).default([]),
   // Pre-sanitized HTML rendered at scan time from the plugin's own README
   // (see src/lib/markdown.ts on the site) — this plugin has no HTML renderer,
