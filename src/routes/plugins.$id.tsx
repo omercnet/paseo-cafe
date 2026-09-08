@@ -162,7 +162,7 @@ function PluginDetail() {
       plugin.limitationsNotesHtml ? (
         <Alert>
           <IconAlertTriangle />
-          <AlertTitle>Limitations</AlertTitle>
+          <AlertTitle>Caveats</AlertTitle>
           <AlertDescription>
             {plugin.platforms.length > 0 ? (
               <p>
