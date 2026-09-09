@@ -82,6 +82,7 @@ function FilterRow({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Clear ${label.toLowerCase()} filter`}
+        accessibilityState={{ selected: selected.size === 0 }}
         style={styles.chip(selected.size === 0)}
         onPress={onClear}
       >
@@ -94,6 +95,7 @@ function FilterRow({
             key={option}
             accessibilityRole="button"
             accessibilityLabel={`Filter by ${option}`}
+            accessibilityState={{ selected: active }}
             style={styles.chip(active)}
             onPress={() => onToggle(option)}
           >
@@ -119,35 +121,67 @@ export function DirectorySurface({ theme, layout }: PluginSurfaceProps) {
     new Set()
   )
   const [installingId, setInstallingId] = useState<string | null>(null)
+  const [installFailure, setInstallFailure] = useState<{
+    entryId: string
+    message: string
+  } | null>(null)
   const [detailEntry, setDetailEntry] = useState<DirectoryEntry | null>(null)
   const [galleryEntry, setGalleryEntry] = useState<DirectoryEntry | null>(null)
 
-  // Undefined while settings are still loading — the server falls back to
-  // its own default in that case, so there's nothing to gate on here.
+  // Undefined until settings are readable: the handler then falls back to
+  // PASEO_CAFE_DIRECTORY_URL or the default catalog, so an unreadable or
+  // invalid settings document still shows a catalog instead of a blank surface.
   const baseUrl =
     settings.status === "ready" ? settings.values.directoryUrl : undefined
+  const settingsPending = settings.status === "loading"
   const queryKey = [DIRECTORY_QUERY_KEY, baseUrl]
 
   const directoryQuery = useQuery({
     queryKey,
-    queryFn: () => listDirectory({ baseUrl }),
+    queryFn: () => listDirectory({ baseUrl, force: false }),
+    // Only the first read is gated, so the default catalog is never fetched
+    // and then immediately replaced by the configured one.
+    enabled: !settingsPending,
     staleTime: 60_000,
   })
 
   const installMutation = useMutation({
     mutationFn: (entry: DirectoryEntry) => {
       setInstallingId(entry.id)
+      setInstallFailure(null)
       return installPlugin({ repo: entry.repo, path: entry.path })
     },
     onSuccess: (result, entry) => {
-      if (result.ok)
+      if (result.ok) {
+        setInstallFailure(null)
         toast.show(`Installed ${entry.name}`, { variant: "success" })
-      else toast.error(result.message)
+      } else {
+        setInstallFailure({ entryId: entry.id, message: result.message })
+        toast.error(`Couldn't install ${entry.name}. See details below.`)
+      }
     },
-    onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Install failed")
+    onError: (error, entry) => {
+      const message = error instanceof Error ? error.message : "Install failed"
+      setInstallFailure({ entryId: entry.id, message })
+      toast.error(`Couldn't install ${entry.name}. See details below.`)
     },
     onSettled: () => setInstallingId(null),
+  })
+
+  const refreshMutation = useMutation({
+    // The key travels with the request: switching the Catalog URL while a
+    // refresh is in flight must not file the old catalog under the new key.
+    mutationFn: async () => {
+      const key = [DIRECTORY_QUERY_KEY, baseUrl]
+      return { key, result: await listDirectory({ baseUrl, force: true }) }
+    },
+    onSuccess: ({ key, result }) => {
+      queryClient.setQueryData(key, result)
+      toast.show("Paseo Cafe refreshed.", { variant: "success" })
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Refresh failed")
+    },
   })
 
   const plugins = directoryQuery.data?.plugins ?? []
@@ -251,6 +285,11 @@ export function DirectorySurface({ theme, layout }: PluginSurfaceProps) {
         theme={theme}
         compact={layout.compact}
         installing={installingId === detailEntry.id}
+        installError={
+          installFailure?.entryId === detailEntry.id
+            ? installFailure.message
+            : null
+        }
         onInstall={() => installMutation.mutate(detailEntry)}
         onOpenGallery={() => setGalleryEntry(detailEntry)}
         onBack={() => setDetailEntry(null)}
@@ -260,10 +299,8 @@ export function DirectorySurface({ theme, layout }: PluginSurfaceProps) {
 
   return (
     <View style={styles.screen}>
-      <Text style={styles.title}>Plugin Directory</Text>
-      <Text style={styles.subtitle}>
-        Browse and install plugins from paseo.cafe.
-      </Text>
+      <Text style={styles.title}>Paseo Cafe</Text>
+      <Text style={styles.subtitle}>Browse and install Paseo plugins.</Text>
       <TextInput
         placeholder="Search plugins…"
         value={search}
@@ -291,20 +328,41 @@ export function DirectorySurface({ theme, layout }: PluginSurfaceProps) {
       </View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Refresh plugin directory"
+        accessibilityLabel="Refresh Paseo Cafe catalog"
+        disabled={
+          settingsPending ||
+          refreshMutation.isPending ||
+          directoryQuery.isFetching
+        }
         style={styles.refreshButton}
-        onPress={() => queryClient.invalidateQueries({ queryKey })}
+        onPress={() => refreshMutation.mutate()}
       >
         <Text style={styles.refreshText}>
-          {directoryQuery.isFetching ? "Refreshing…" : "Refresh"}
+          {refreshMutation.isPending || directoryQuery.isFetching
+            ? "Refreshing…"
+            : "Refresh"}
         </Text>
       </Pressable>
-      {directoryQuery.isPending ? (
+      {settingsPending ? (
+        <Text style={styles.emptyText}>Loading Paseo Cafe settings…</Text>
+      ) : null}
+      {settings.status === "error" || settings.status === "invalid" ? (
+        <Text accessibilityRole="alert" style={styles.emptyText}>
+          Paseo Cafe settings need attention, so the default catalog is in use:{" "}
+          {settings.error}
+        </Text>
+      ) : null}
+      {directoryQuery.isPending && !settingsPending ? (
         <Text style={styles.emptyText}>Loading plugins…</Text>
       ) : null}
       {directoryQuery.isError ? (
+        <Text accessibilityRole="alert" style={styles.emptyText}>
+          Couldn't reach Paseo Cafe: {directoryQuery.error.message}
+        </Text>
+      ) : null}
+      {directoryQuery.data ? (
         <Text style={styles.emptyText}>
-          Couldn't reach paseo.cafe: {directoryQuery.error.message}
+          Catalog generated {directoryQuery.data.fetchedAt.slice(0, 10)}.
         </Text>
       ) : null}
       {directoryQuery.isSuccess && sorted.length === 0 ? (
