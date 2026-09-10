@@ -11,6 +11,7 @@ import { SiteHeader } from "@/components/site-header"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Button } from "@/components/ui/button"
 import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site"
+import { HOME_SEARCH_DEFAULT } from "@/routes/index"
 import appCss from "../styles.css?url"
 
 export const Route = createRootRoute({
@@ -44,10 +45,17 @@ export const Route = createRootRoute({
         removed from the registry.
       </p>
       <div className="mt-2 flex gap-3">
-        <Button nativeButton={false} render={<Link to="/" />}>
+        <Button
+          nativeButton={false}
+          render={<Link to="/" search={HOME_SEARCH_DEFAULT} />}
+        >
           Go home
         </Button>
-        <Button nativeButton={false} variant="outline" render={<Link to="/" />}>
+        <Button
+          nativeButton={false}
+          variant="outline"
+          render={<Link to="/" search={HOME_SEARCH_DEFAULT} />}
+        >
           Browse plugins
         </Button>
       </div>
