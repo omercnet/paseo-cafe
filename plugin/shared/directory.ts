@@ -88,6 +88,24 @@ export const directoryEntrySchema = z.object({
 
 export type DirectoryEntry = z.infer<typeof directoryEntrySchema>
 
+export const installedPluginSchema = z.object({
+  id: z.string(),
+  path: z.string(),
+  enabled: z.boolean(),
+  status: z.enum(["running", "failed", "disabled"]),
+  source: z.enum(["git", "directory"]).default("directory"),
+  remote: z.string().optional(),
+  ref: z.string().optional(),
+  commit: z.string().optional(),
+  latestCommit: z.string().optional(),
+  updateState: z
+    .enum(["unknown", "pinned", "current", "available", "diverged"])
+    .default("unknown"),
+  updateError: z.string().optional(),
+})
+
+export type InstalledPlugin = z.infer<typeof installedPluginSchema>
+
 export const directoryListRpc = defineRpc({
   name: "directory.list",
   // baseUrl comes from the client's own directorySettings read — see
@@ -97,8 +115,18 @@ export const directoryListRpc = defineRpc({
     force: z.boolean().default(false),
   }),
   output: z.object({
-    plugins: z.array(directoryEntrySchema),
+    plugins: z.array(directoryEntrySchema).max(500),
     fetchedAt: z.iso.datetime({ offset: true, local: true }),
+    installations: z.array(installedPluginSchema).max(500).optional(),
+    installationError: z.string().optional(),
+  }),
+})
+
+export const directoryUpdateStatusRpc = defineRpc({
+  name: "directory.update-status",
+  input: z.object({ baseUrl: httpUrlSchema.optional() }),
+  output: z.object({
+    installations: z.array(installedPluginSchema).max(500),
   }),
 })
 
@@ -136,6 +164,23 @@ export const directoryInstallRpc = defineRpc({
   }),
 })
 
+export const directoryUpdateRpc = defineRpc({
+  name: "directory.update",
+  input: z.object({
+    pluginId: z.string().regex(/^[a-z][a-z0-9-]*$/),
+    entry: z.object({
+      id: z.string(),
+      repo: z.string(),
+      path: z.string().optional(),
+    }),
+  }),
+  output: z.object({
+    ok: z.boolean(),
+    message: z.string(),
+    updated: z.boolean().optional(),
+  }),
+})
+
 // GitHub "owner/repo" — one slash, conservative charset. Checked on both sides:
 // the client disables Install for anything that fails this, and the server
 // re-checks it right before exec'ing the CLI, since that's the boundary that
@@ -168,6 +213,50 @@ export function getInstallCommand(
 
 export function getSiteUrl(entry: Pick<DirectoryEntry, "id">): string {
   return `${SITE_URL}/plugins/${encodeURIComponent(entry.id)}`
+}
+function githubRepoFromRemote(remote: string | undefined): string | undefined {
+  if (!remote) return undefined
+  const normalized = remote
+    .trim()
+    .replace(/\/$/, "")
+    .replace(/\.git$/, "")
+  const match =
+    /^(?:(?:https?|git):\/\/|ssh:\/\/(?:git@)?|git@)github\.com[/:]([^/]+)\/([^/]+)$/i.exec(
+      normalized
+    )
+  return match ? `${match[1]}/${match[2]}`.toLowerCase() : undefined
+}
+function normalizePluginPath(path: string | undefined): string | undefined {
+  if (!path || path === ".") return undefined
+  const normalized = path
+    .replace(/\\/g, "/")
+    .replace(/^\.\//, "")
+    .replace(/^\/+/, "")
+    .replace(/\/$/, "")
+  return normalized || undefined
+}
+
+function pluginPathFromCheckout(path: string): string | undefined {
+  const normalized = path.replace(/\\/g, "/").replace(/\/$/, "")
+  const marker = "/checkout"
+  const index = normalized.lastIndexOf(marker)
+  if (index < 0) return undefined
+  return normalizePluginPath(normalized.slice(index + marker.length))
+}
+
+export function findInstallations(
+  entry: Pick<DirectoryEntry, "id" | "repo" | "path">,
+  installations: readonly InstalledPlugin[]
+): InstalledPlugin[] {
+  const expectedRepo = entry.repo.toLowerCase()
+  const expectedPath = normalizePluginPath(entry.path)
+  return installations.filter((installation) => {
+    if (installation.source === "directory") return installation.id === entry.id
+    return (
+      githubRepoFromRemote(installation.remote) === expectedRepo &&
+      pluginPathFromCheckout(installation.path) === expectedPath
+    )
+  })
 }
 
 /**
