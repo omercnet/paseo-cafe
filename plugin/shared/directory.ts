@@ -16,9 +16,51 @@ const httpUrlSchema = z
   .refine((value) => /^https?:\/\//i.test(value), "Expected an HTTP(S) URL")
 
 /**
+ * Catalog responses decide which repositories the install button hands to the
+ * `paseo` CLI, so the transport has to be authenticated: anyone able to rewrite
+ * a plaintext response picks what gets installed on the daemon host. HTTP is
+ * allowed only for loopback, which is what the local-development workflow in
+ * the README needs; every other catalog has to be HTTPS.
+ */
+const catalogUrlPattern =
+  /^(https?):\/\/(?:[^/?#@\s\\]*@)?(\[[0-9a-f:.]+\]|[^:/?#@\s\\]+)(?::(\d+))?(?:[/?#]|$)/i
+
+export function isTrustedCatalogUrl(value: string): boolean {
+  try {
+    new URL(value)
+  } catch {
+    return false
+  }
+  // React Native's URL shim truncates bracketed IPv6 hostnames and preserves
+  // host casing. Parse the authority directly instead of trusting its hostname.
+  const match = catalogUrlPattern.exec(value.trim())
+  if (!match) return false
+  const [, protocol, rawHost, port] = match
+  if (port !== undefined && Number(port) > 65_535) return false
+  if (protocol.toLowerCase() === "https") return true
+  const host = rawHost.toLowerCase()
+  if (host === "localhost" || host.endsWith(".localhost") || host === "[::1]") {
+    return true
+  }
+  const octets = host.split(".")
+  return (
+    octets.length === 4 &&
+    octets[0] === "127" &&
+    octets.every(
+      (octet) => /^(0|[1-9]\d{0,2})$/.test(octet) && Number(octet) <= 255
+    )
+  )
+}
+
+const catalogUrlSchema = httpUrlSchema.refine(
+  isTrustedCatalogUrl,
+  "Catalog URL must use HTTPS, or HTTP on localhost"
+)
+
+/**
  * Which paseo.cafe deployment to read from — host-scoped so it's one setting
  * per daemon, editable from Settings → Plugins → Paseo Cafe without a
- * reload. Exists for local development (point at `npm run dev`) and for
+ * reload. Exists for local development (point at `bun run dev`) and for
  * anyone running a self-hosted fork of the directory.
  */
 export const directorySettings = defineSettings({
@@ -26,7 +68,7 @@ export const directorySettings = defineSettings({
   scope: "host",
   version: 1,
   schema: z.object({
-    directoryUrl: httpUrlSchema.default(DEFAULT_DIRECTORY_URL),
+    directoryUrl: catalogUrlSchema.default(DEFAULT_DIRECTORY_URL),
   }),
 })
 
@@ -111,7 +153,7 @@ export const directoryListRpc = defineRpc({
   // baseUrl comes from the client's own directorySettings read — see
   // DirectorySurface.tsx — so the server doesn't need its own settings access.
   input: z.object({
-    baseUrl: httpUrlSchema.optional(),
+    baseUrl: catalogUrlSchema.optional(),
     force: z.boolean().default(false),
   }),
   output: z.object({
@@ -124,7 +166,7 @@ export const directoryListRpc = defineRpc({
 
 export const directoryUpdateStatusRpc = defineRpc({
   name: "directory.update-status",
-  input: z.object({ baseUrl: httpUrlSchema.optional() }),
+  input: z.object({ baseUrl: catalogUrlSchema.optional() }),
   output: z.object({
     installations: z.array(installedPluginSchema).max(500),
   }),

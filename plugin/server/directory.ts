@@ -19,6 +19,7 @@ import {
   getSiteUrl,
   HEALTH_LABELS,
   installedPluginSchema,
+  isTrustedCatalogUrl,
   isValidInstallPath,
   isValidRepo,
   stripHtml,
@@ -282,14 +283,31 @@ const cache = new Map<
     plugins: z.infer<typeof directoryEntrySchema>[]
   }
 >()
+let warnedAboutRejectedDirectoryUrl = false
 
 function resolveDirectoryUrl(baseUrl: string | undefined): string {
   // PASEO_CAFE_DIRECTORY_URL is a lower-priority escape hatch for contexts that
   // cannot persist plugin settings yet (CI, headless smoke tests). The settings
   // override wins because it is reachable from the running app.
-  return (
-    baseUrl || process.env.PASEO_CAFE_DIRECTORY_URL || DEFAULT_DIRECTORY_URL
-  )
+  if (baseUrl) {
+    if (!isTrustedCatalogUrl(baseUrl)) {
+      throw new Error("Catalog URL must use HTTPS, or HTTP on localhost.")
+    }
+    return baseUrl
+  }
+  const fromEnv = process.env.PASEO_CAFE_DIRECTORY_URL
+  if (!fromEnv) return DEFAULT_DIRECTORY_URL
+  // Unlike the settings value this never passed a schema, so it gets the same
+  // transport check here; a rejected value falls back instead of silently
+  // pointing the install button at an unauthenticated catalog.
+  if (isTrustedCatalogUrl(fromEnv)) return fromEnv
+  if (!warnedAboutRejectedDirectoryUrl) {
+    console.error(
+      "Ignoring PASEO_CAFE_DIRECTORY_URL: catalog URL must use HTTPS, or HTTP on localhost."
+    )
+    warnedAboutRejectedDirectoryUrl = true
+  }
+  return DEFAULT_DIRECTORY_URL
 }
 
 async function fetchDirectory(baseUrl: string | undefined, force = false) {
@@ -306,6 +324,7 @@ async function fetchDirectory(baseUrl: string | undefined, force = false) {
   try {
     response = await fetch(url, {
       signal: controller.signal,
+      redirect: "error",
       headers: { accept: "application/json" },
     })
   } finally {
