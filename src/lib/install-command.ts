@@ -1,4 +1,5 @@
 import type { PluginRecord } from "@/lib/plugin-schema"
+import { getCatalogInstallCommand } from "../../plugin/shared/catalog"
 
 /**
  * The canonical install command for a plugin — derived purely from the
@@ -8,9 +9,13 @@ import type { PluginRecord } from "@/lib/plugin-schema"
  * an author's own install instructions are missing, stale, or inconsistent.
  */
 export function getInstallCommand(
-  plugin: Pick<PluginRecord, "repo" | "path">
+  plugin: Pick<PluginRecord, "repo" | "path" | "repoMeta">
 ): string {
-  return plugin.path
-    ? `paseo plugin add ${plugin.repo} --path ${plugin.path}`
-    : `paseo plugin add ${plugin.repo}`
+  const command = getCatalogInstallCommand({
+    repo: plugin.repo,
+    path: plugin.path,
+    ref: plugin.repoMeta?.defaultBranch,
+  })
+  if (!command) throw new Error("Invalid plugin install target")
+  return command
 }
