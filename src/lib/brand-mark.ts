@@ -1,11 +1,13 @@
 /**
- * The paseo.cafe mark, "Terrace": a cup seen from above, the way you see it
+ * The paseo.cafe mark, "Snail": a cup seen from above, the way you see it
  * once you have sat down at a cafe table. The rim and the swirl in the coffee
- * are one spiral line; a small loop makes the handle.
+ * are one spiral line, a small loop makes the handle, and together they read
+ * as a snail — the slowest stroller there is, and a natural companion to the
+ * butterfly in paseo.sh's own mark.
  *
- * Drawn the way paseo.sh's own mark is drawn — one continuous, bold,
- * round-capped line — without borrowing that mark itself. Kinship by
- * language, not by quotation; the name carries the relationship.
+ * Drawn the way that mark is drawn — one continuous, bold, round-capped
+ * line — without borrowing it. Kinship by language, not by quotation; the
+ * name carries the relationship.
  *
  * This module is the single source of truth for the mark: the React header
  * component, the committed favicon/touch-icon rasters and the plugin's PNG
