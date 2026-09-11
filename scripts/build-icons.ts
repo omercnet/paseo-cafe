@@ -95,6 +95,7 @@ writeFileSync(
 
 /** The paseo.cafe mark, white on transparent, for tinting with <Image tintColor>. */
 export const BRAND_MARK_PNG =
+  // biome-ignore lint/security/noSecrets: This is a generated PNG data URI, not a credential.
   "data:image/png;base64,${pluginPng.toString("base64")}"
 
 /** Pixel size of BRAND_MARK_PNG (square). */
