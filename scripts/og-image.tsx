@@ -13,6 +13,13 @@ import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { Resvg } from "@resvg/resvg-js"
 import satori from "satori"
+import {
+  BRAND_BROWN,
+  BRAND_CREAM,
+  MARK_PATHS,
+  MARK_STROKE,
+  MARK_VIEWBOX,
+} from "../src/lib/brand-mark.ts"
 
 // Scripts are always invoked via `bun run` from the repo root (see package.json).
 const ASSETS_DIR = join(process.cwd(), "scripts", "assets")
@@ -23,12 +30,13 @@ const fontBold = readFileSync(join(ASSETS_DIR, "jetbrains-mono-700.woff"))
 const WIDTH = 1200
 const HEIGHT = 630
 
-const BG = "#0b0f10"
-const FG = "#f5f7f6"
-const MUTED = "#9aa6a5"
-const SUBTLE = "#c7d0cf"
-const ACCENT = "#2f8f88"
-const BORDER = "rgba(255,255,255,0.15)"
+// The site's own palette (src/styles.css --primary / --primary-foreground),
+// so a shared link previews as the same product as the page behind it.
+const BG = BRAND_BROWN
+const FG = BRAND_CREAM
+const MUTED = "#c9b593"
+const SUBTLE = "#eadcbf"
+const BORDER = "rgba(249,237,207,0.3)"
 
 function truncate(text: string, max: number): string {
   return text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text
@@ -68,14 +76,21 @@ export async function renderOgImage({
           color: MUTED,
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            width: 16,
-            height: 16,
-            backgroundColor: ACCENT,
-          }}
-        />
+        <svg
+          viewBox={MARK_VIEWBOX}
+          width={36}
+          height={36}
+          fill="none"
+          stroke={FG}
+          strokeWidth={MARK_STROKE}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          {MARK_PATHS.map((d) => (
+            <path key={d} d={d} />
+          ))}
+        </svg>
         <div style={{ display: "flex" }}>paseo.cafe</div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>

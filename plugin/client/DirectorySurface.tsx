@@ -30,6 +30,7 @@ import {
   normalizeDirectoryCategories,
 } from "../shared/directory"
 import { filterAccessibilityLabel } from "./accessibility"
+import { BrandMark } from "./BrandMark"
 import { PluginDetailPage } from "./PluginDetailPage"
 import { PluginGalleryPage } from "./PluginGalleryPage"
 import { PluginRow } from "./PluginRow"
@@ -946,6 +947,21 @@ export function DirectorySurface({ theme, layout }: PluginSurfaceProps) {
       },
       listHeader: { gap: layout.compact ? 16 : 24 },
       masthead: { gap: 8, paddingVertical: layout.compact ? 4 : 8 },
+      // Mirrors the website header: mark in the foreground color next to a
+      // semibold, tightly tracked wordmark.
+      brandRow: {
+        flexDirection: "row" as const,
+        alignItems: "center" as const,
+        gap: 8,
+        marginBottom: 4,
+      },
+      brandName: {
+        color: theme.colors.foreground,
+        fontFamily: CAFE_MONO_FONT,
+        fontSize: 14,
+        fontWeight: "600" as const,
+        letterSpacing: -0.3,
+      },
       eyebrowRow: {
         flexDirection: "row" as const,
         alignItems: "center" as const,
@@ -1097,6 +1113,10 @@ export function DirectorySurface({ theme, layout }: PluginSurfaceProps) {
         ListHeaderComponent={
           <View style={styles.listHeader}>
             <View style={styles.masthead}>
+              <View style={styles.brandRow}>
+                <BrandMark size={22} color={theme.colors.foreground} />
+                <Text style={styles.brandName}>paseo.cafe</Text>
+              </View>
               <View style={styles.eyebrowRow}>
                 <View style={styles.eyebrowDot} />
                 <Text style={styles.eyebrow}>

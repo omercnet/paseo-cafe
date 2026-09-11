@@ -62,6 +62,13 @@ the other by hand**:
    in `plugin/client/visual.ts` plus Paseo's `theme.colors`/
    `layout.compact`) leaves the plugin visually stale. Do the matching pass
    in the same change.
+   The brand mark is the same story with one twist: its geometry lives in
+   `src/lib/brand-mark.ts` (website + scripts), and `bun run icons:build`
+   generates every derived asset from it — `public/favicon.*`,
+   `public/apple-touch-icon.png`, and `plugin/shared/brand-mark.ts` (a
+   tintable PNG data URI, since the plugin cannot render SVG). Edit the
+   module, run the script, commit the outputs; never hand-edit a generated
+   file.
 3. **Root `tsconfig.json` excludes `plugin/`** from the website's own
    project only so `bun run typecheck` doesn't try to bulk-check the whole
    React Native tree (wrong `lib`, unresolved RN-only modules). Importing a
