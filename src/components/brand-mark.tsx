@@ -1,13 +1,8 @@
-import {
-  CUP_PATH,
-  LOOP_PATH,
-  LOOP_TRANSFORM,
-  MARK_VIEWBOX,
-} from "@/lib/brand-mark"
+import { MARK_PATHS, MARK_STROKE, MARK_VIEWBOX } from "@/lib/brand-mark"
 
 /**
- * The paseo.cafe mark as inline SVG in `currentColor`, so it follows the
- * theme wherever it sits. See src/lib/brand-mark.ts for the geometry.
+ * The paseo.cafe mark as inline SVG stroked in `currentColor`, so it follows
+ * the theme wherever it sits. See src/lib/brand-mark.ts for the geometry.
  */
 export function BrandMark({ className }: { className?: string }) {
   return (
@@ -15,11 +10,16 @@ export function BrandMark({ className }: { className?: string }) {
       viewBox={MARK_VIEWBOX}
       aria-hidden="true"
       focusable="false"
-      fill="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={MARK_STROKE}
+      strokeLinecap="round"
+      strokeLinejoin="round"
       className={className}
     >
-      <path d={CUP_PATH} />
-      <path d={LOOP_PATH} transform={LOOP_TRANSFORM} />
+      {MARK_PATHS.map((d) => (
+        <path key={d} d={d} />
+      ))}
     </svg>
   )
 }

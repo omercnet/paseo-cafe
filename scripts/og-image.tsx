@@ -16,9 +16,8 @@ import satori from "satori"
 import {
   BRAND_BROWN,
   BRAND_CREAM,
-  CUP_PATH,
-  LOOP_PATH,
-  LOOP_TRANSFORM,
+  MARK_PATHS,
+  MARK_STROKE,
   MARK_VIEWBOX,
 } from "../src/lib/brand-mark.ts"
 
@@ -81,11 +80,16 @@ export async function renderOgImage({
           viewBox={MARK_VIEWBOX}
           width={36}
           height={36}
-          fill={FG}
+          fill="none"
+          stroke={FG}
+          strokeWidth={MARK_STROKE}
+          strokeLinecap="round"
+          strokeLinejoin="round"
           aria-hidden="true"
         >
-          <path d={CUP_PATH} />
-          <path d={LOOP_PATH} transform={LOOP_TRANSFORM} />
+          {MARK_PATHS.map((d) => (
+            <path key={d} d={d} />
+          ))}
         </svg>
         <div style={{ display: "flex" }}>paseo.cafe</div>
       </div>

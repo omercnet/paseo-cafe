@@ -4,10 +4,10 @@
  * Run with `bun run icons:build` after editing the mark; the outputs are
  * committed, so this never runs at build or request time.
  *
- * The 16px frame is rendered with the loop slightly thickened (see
- * LOOP_SMALL_STROKE) — the usual favicon trade of exact fidelity for
- * legibility. Every frame sits on a solid brand-brown tile so the mark reads
- * on any tab-bar color, the same way paseo.sh's own favicon does.
+ * The 16px frame is rendered with a heavier line (see MARK_STROKE_SMALL) —
+ * the usual favicon trade of exact fidelity for legibility. Every frame sits
+ * on a solid brand-brown tile so the mark reads on any tab-bar color, the
+ * same way paseo.sh's own favicon does.
  *
  * It also writes plugin/shared/brand-mark.ts: the same mark as a white-on-
  * transparent PNG data URI. The companion plugin cannot render SVG (the Paseo
