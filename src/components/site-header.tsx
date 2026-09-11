@@ -1,5 +1,6 @@
 import { IconBrandGithub } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
+import { BrandMark } from "@/components/brand-mark"
 import { ModeToggle } from "@/components/mode-toggle"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { HOME_SEARCH_DEFAULT } from "@/lib/catalog-search"
@@ -16,8 +17,8 @@ export function SiteHeader() {
           search={HOME_SEARCH_DEFAULT}
           className="flex flex-col justify-center"
         >
-          <span className="flex items-center gap-2 font-medium">
-            <img src="/favicon.svg" alt="" className="size-5" />
+          <span className="flex items-center gap-2 font-semibold tracking-tight">
+            <BrandMark className="size-5.5 shrink-0" />
             {!isMobile ? SITE_NAME : null}
           </span>
         </Link>
