@@ -1,40 +1,41 @@
 /**
- * Derives the committed favicon rasters from public/favicon.svg, which is the
- * single source of truth for the paseo.cafe mark. Run with `bun run icons:build`
- * after editing that SVG; the outputs are committed, so this never runs at
- * build or request time.
+ * Writes the committed brand assets in public/ from the mark defined in
+ * src/lib/brand-mark.ts: favicon.svg, favicon.ico and apple-touch-icon.png.
+ * Run with `bun run icons:build` after editing the mark; the outputs are
+ * committed, so this never runs at build or request time.
  *
- * The 16px frame is rendered from a deliberately different variant: at that
- * size the 1.75-unit outline lands on well under a pixel and smears into grey,
- * and the accent square shrinks to a single stray dot. So the small frame drops
- * the accent, tightens the padding, and thickens the stroke — the usual favicon
- * trade of exact fidelity for legibility.
+ * The 16px frame is rendered with the loop slightly thickened (see
+ * LOOP_SMALL_STROKE) — the usual favicon trade of exact fidelity for
+ * legibility. Every frame sits on a solid brand-brown tile so the mark reads
+ * on any tab-bar color, the same way paseo.sh's own favicon does.
  */
-import { readFileSync, writeFileSync } from "node:fs"
+import { writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { Resvg } from "@resvg/resvg-js"
+import {
+  BRAND_BROWN,
+  BRAND_CREAM,
+  brandMarkSvg,
+} from "../src/lib/brand-mark.ts"
 
 // Scripts are always invoked via `bun run` from the repo root (see package.json).
 const PUBLIC_DIR = join(process.cwd(), "public")
-const SOURCE = join(PUBLIC_DIR, "favicon.svg")
 
 const ICO_SIZES = [16, 32, 48] as const
 const APPLE_TOUCH_SIZE = 180
 
+function tile(small: boolean): string {
+  return brandMarkSvg({
+    ink: BRAND_CREAM,
+    background: BRAND_BROWN,
+    small,
+    title: "paseo.cafe",
+  })
+}
+
 function render(svg: string, size: number): Buffer {
   const resvg = new Resvg(svg, { fitTo: { mode: "width", value: size } })
   return resvg.render().asPng()
-}
-
-/** Bolder, edge-to-edge variant of the mark, for frames of 16px and under. */
-function smallVariant(svg: string): string {
-  return svg
-    .replace(/\s*<rect x="50\.1"[^>]*\/>/, "")
-    .replace(
-      'transform="translate(63.92 63.92) scale(16.004)"',
-      'transform="translate(30 30) scale(18.5)"'
-    )
-    .replace('stroke-width="1.75"', 'stroke-width="2.5"')
 }
 
 /** Packs PNG frames into an .ico. PNG-compressed frames are read by every current browser. */
@@ -62,25 +63,21 @@ function packIco(frames: { size: number; png: Buffer }[]): Buffer {
   return Buffer.concat([directory, ...frames.map((frame) => frame.png)])
 }
 
-const svg = readFileSync(SOURCE, "utf8")
-const small = smallVariant(svg)
-if (small === svg) {
-  throw new Error(
-    `${SOURCE} no longer matches what smallVariant() rewrites — update scripts/build-icons.ts`
-  )
-}
+const full = tile(false)
+const small = tile(true)
+
+writeFileSync(join(PUBLIC_DIR, "favicon.svg"), full)
 
 const frames = ICO_SIZES.map((size) => ({
   size,
-  png: render(size <= 16 ? small : svg, size),
+  png: render(size <= 16 ? small : full, size),
 }))
-
 writeFileSync(join(PUBLIC_DIR, "favicon.ico"), packIco(frames))
 writeFileSync(
   join(PUBLIC_DIR, "apple-touch-icon.png"),
-  render(svg, APPLE_TOUCH_SIZE)
+  render(full, APPLE_TOUCH_SIZE)
 )
 
 console.log(
-  `Wrote favicon.ico (${ICO_SIZES.join(", ")}px) and apple-touch-icon.png (${APPLE_TOUCH_SIZE}px) to public/`
+  `Wrote favicon.svg, favicon.ico (${ICO_SIZES.join(", ")}px) and apple-touch-icon.png (${APPLE_TOUCH_SIZE}px) to public/`
 )

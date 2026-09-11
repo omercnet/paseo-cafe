@@ -37,7 +37,7 @@ export function SiteFooter() {
           .
         </p>
         <p className="mt-3">
-          Build with ❤︎⁠ as a joined collaboration by{" "}
+          Built with ❤︎⁠ as a joined collaboration by{" "}
           <a
             href="https://github.com/tommerty"
             target="_blank"
