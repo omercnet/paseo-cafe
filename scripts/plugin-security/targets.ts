@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 import { readdirSync, readFileSync, writeFileSync } from "node:fs"
-import { basename, join } from "node:path"
+import { basename, join, resolve } from "node:path"
 import { z } from "zod"
 import {
   registryEntrySchema,
@@ -175,8 +175,7 @@ async function main() {
   const args = process.argv.slice(2)
   const outputPath = valueFor(args, "--output")
   if (!outputPath) throw new Error("missing --output")
-  const registryRoot = join(
-    process.cwd(),
+  const registryRoot = resolveRegistryRoot(
     valueFor(args, "--registry") ?? "registry"
   )
   const eventPath = valueFor(args, "--event")
@@ -256,4 +255,8 @@ export function writeCount(count: number) {
 function valueFor(argv: string[], flag: string) {
   const i = argv.indexOf(flag)
   return i >= 0 ? argv[i + 1] : undefined
+}
+
+export function resolveRegistryRoot(path: string, cwd = process.cwd()) {
+  return resolve(cwd, path)
 }

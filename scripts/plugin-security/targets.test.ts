@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { selectTargets, writeCount } from "./targets.ts"
+import { resolveRegistryRoot, selectTargets, writeCount } from "./targets.ts"
 
 const responses = new Map<string, unknown>()
 const originalFetch = globalThis.fetch
@@ -170,5 +170,14 @@ describe("selectTargets", () => {
     process.env.GITHUB_OUTPUT = output
     writeCount(3)
     expect(readFileSync(output, "utf8")).toContain("count=3")
+  })
+
+  it("preserves absolute registry paths and resolves relative paths", () => {
+    expect(resolveRegistryRoot("/tmp/registry", "/workspace")).toBe(
+      "/tmp/registry"
+    )
+    expect(resolveRegistryRoot("registry", "/workspace")).toBe(
+      "/workspace/registry"
+    )
   })
 })
