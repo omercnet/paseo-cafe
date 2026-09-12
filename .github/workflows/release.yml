@@ -1,7 +1,9 @@
 name: Release
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [main]
 
 permissions: {}
@@ -14,7 +16,9 @@ jobs:
     # starts a release-please run that fails on permissions — or, worse,
     # half-succeeds and leaves a release branch behind — for a release nobody
     # is going to cut.
-    if: github.repository == 'paseo-cafe/paseo-cafe'
+    if: >-
+      github.repository == 'paseo-cafe/paseo-cafe' &&
+      github.event.workflow_run.conclusion == 'success'
     timeout-minutes: 10
     permissions:
       contents: write

@@ -29,11 +29,8 @@ describe("selectTargets", () => {
     const registry = join(root, "registry")
     mkdirSync(registry)
     writeFileSync(join(registry, "one.json"), JSON.stringify({ repo: "o/r" }))
-    responses.set("https://api.github.com/repos/o/r", {
-      default_branch: "main",
-    })
-    responses.set("https://api.github.com/repos/o/r/git/ref/heads/main", {
-      object: { sha: "commit-one" },
+    responses.set("https://api.github.com/repos/o/r/commits/HEAD", {
+      sha: "commit-one",
     })
     expect(
       await selectTargets({ registryRoot: registry, githubToken: "token" })
@@ -94,17 +91,11 @@ describe("selectTargets", () => {
       "https://raw.githubusercontent.com/a/head/head-sha/registry/stable.json",
       JSON.stringify({ repo: "o/stable" })
     )
-    responses.set("https://api.github.com/repos/o/r", {
-      default_branch: "main",
+    responses.set("https://api.github.com/repos/o/r/commits/HEAD", {
+      sha: "commit-one",
     })
-    responses.set("https://api.github.com/repos/o/r/git/ref/heads/main", {
-      object: { sha: "commit-one" },
-    })
-    responses.set("https://api.github.com/repos/o/stable", {
-      default_branch: "main",
-    })
-    responses.set("https://api.github.com/repos/o/stable/git/ref/heads/main", {
-      object: { sha: "commit-stable" },
+    responses.set("https://api.github.com/repos/o/stable/commits/HEAD", {
+      sha: "commit-stable",
     })
 
     await expect(
@@ -153,12 +144,9 @@ describe("selectTargets", () => {
       "https://raw.githubusercontent.com/a/head/head-sha/registry/new-plugin.json",
       JSON.stringify({ repo: "owner/new-plugin" })
     )
-    responses.set("https://api.github.com/repos/owner/new-plugin", {
-      default_branch: "main",
-    })
     responses.set(
-      "https://api.github.com/repos/owner/new-plugin/git/ref/heads/main",
-      { object: { sha: "plugin-commit" } }
+      "https://api.github.com/repos/owner/new-plugin/commits/HEAD",
+      { sha: "plugin-commit" }
     )
 
     await expect(

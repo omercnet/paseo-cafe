@@ -20,7 +20,8 @@ import {
 import { fetchRawJson, GitHubNotFoundError, listDir } from "./github.ts"
 
 // Scripts are always invoked via `bun run` from the repo root (see package.json).
-const REGISTRY_DIR = join(process.cwd(), "registry")
+const REGISTRY_DIR = process.env.REGISTRY_DIR ?? join(process.cwd(), "registry")
+const SKIP_GITHUB_VALIDATION = process.env.SKIP_GITHUB_VALIDATION === "true"
 
 interface Problem {
   file: string
@@ -71,6 +72,8 @@ async function main() {
       continue
     }
     const entry = parsed.data
+
+    if (SKIP_GITHUB_VALIDATION) continue
 
     const [owner, repo] = entry.repo.split("/")
 
