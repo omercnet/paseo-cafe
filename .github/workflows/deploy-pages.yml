@@ -1,7 +1,9 @@
 name: Enrich and deploy to GitHub Pages
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [main]
   schedule:
     - cron: "17 */6 * * *"
@@ -12,7 +14,7 @@ permissions:
 
 concurrency:
   group: github-pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -24,7 +26,11 @@ jobs:
     # GitHub API quota to do it. Pushes and manual runs still work everywhere;
     # a fork that does want the periodic refresh can run it from the Actions
     # tab, or drop this condition.
-    if: github.event_name != 'schedule' || github.repository == 'paseo-cafe/paseo-cafe'
+    if: >-
+      (github.event_name != 'workflow_run' ||
+       github.event.workflow_run.conclusion == 'success') &&
+      (github.event_name != 'schedule' ||
+       github.repository == 'paseo-cafe/paseo-cafe')
     timeout-minutes: 35
     permissions:
       contents: read
@@ -34,6 +40,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           persist-credentials: false
           # Full history: scripts/scan.ts derives each plugin's addedAt from
           # the commit that first added its registry entry, and a shallow
@@ -90,12 +97,8 @@ jobs:
           VITE_SITE_URL: ${{ steps.pages.outputs.base_url }}
           VITE_BASE_PATH: ${{ steps.pages.outputs.base_path }}
 
-      - name: Verify generated site
-        run: |
-          bun run check:app
-          bun run typecheck
-          bun run test
-          bun run build:generated
+      - name: Build generated site
+        run: bun run build:generated
         env:
           VITE_SITE_URL: ${{ steps.pages.outputs.base_url }}
           VITE_BASE_PATH: ${{ steps.pages.outputs.base_path }}

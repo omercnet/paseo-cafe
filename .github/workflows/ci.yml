@@ -81,10 +81,15 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Scan registry
-        run: bun run registry:scan
+      # Pull requests execute contributor-controlled code. Build a deterministic
+      # local catalog and never expose credentials to this trust domain.
+      - name: Generate offline registry fixtures
+        run: bun run registry:scan:offline
+
+      - name: Validate registry data locally
+        run: bun run registry:validate
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          SKIP_GITHUB_VALIDATION: "true"
 
       - name: Check with Biome
         run: bun run check:app

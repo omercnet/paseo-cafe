@@ -250,7 +250,8 @@ export async function scanOne(
   entryFile: string,
   securityCatalog: Record<string, PluginSecurity>,
   registryDir = REGISTRY_DIR,
-  addedAt?: string
+  addedAt?: string,
+  offline = false
 ): Promise<PluginRecord> {
   const id = registryIdSchema.parse(entryFile.slice(0, -".json".length))
   const raw = JSON.parse(readFileSync(join(registryDir, entryFile), "utf8"))
@@ -282,6 +283,7 @@ export async function scanOne(
     addedAt,
     scannedAt,
   }
+  if (offline) return pluginRecordSchema.parse(base)
 
   try {
     const repoMeta = await fetchRepoMeta(owner, repo)
@@ -631,6 +633,7 @@ async function main() {
       "  ! no registry history in git (shallow clone?) — every plugin will be listed without an added date"
     )
   }
+  const offline = process.argv.includes("--offline")
 
   const records: PluginRecord[] = []
   for (const file of files) {
@@ -639,7 +642,8 @@ async function main() {
       file,
       securityCatalog,
       REGISTRY_DIR,
-      addedAt.get(file)
+      addedAt.get(file),
+      offline
     )
     if (record.scanError) console.warn(`  ! ${record.scanError}`)
     records.push(record)

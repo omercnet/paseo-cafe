@@ -148,20 +148,15 @@ async function readRegistrySnapshot(
 
 async function resolvePluginRepoRevision(repo: string, token?: string) {
   const [owner, name] = repo.split("/")
-  const repoInfo = z
-    .object({ default_branch: z.string() })
-    .parse(
-      await fetchJson(`https://api.github.com/repos/${owner}/${name}`, token)
-    )
-  const ref = z
-    .object({ object: z.object({ sha: z.string() }) })
+  const commit = z
+    .object({ sha: z.string() })
     .parse(
       await fetchJson(
-        `https://api.github.com/repos/${owner}/${name}/git/ref/heads/${encodeURIComponent(repoInfo.default_branch)}`,
+        `https://api.github.com/repos/${owner}/${name}/commits/HEAD`,
         token
       )
     )
-  return ref.object.sha
+  return commit.sha
 }
 
 async function fetchJson(url: string, token?: string) {

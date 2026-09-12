@@ -1,27 +1,26 @@
-name: Plugin security
+name: Registry admission
 
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
-    paths:
-      - "registry/*.json"
 
 permissions:
   contents: read
   pull-requests: write
 
 concurrency:
-  group: plugin-security-${{ github.event.pull_request.number }}
+  group: registry-admission-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  scan:
-    name: Scan changed plugins
-    if: github.event.pull_request.draft == false
+  admission:
+    name: Registry admission
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Check out trusted scanner
+      # pull_request_target is privileged. Every executable file and dependency
+      # must come from the trusted base commit; fork content is fetched as data.
+      - name: Check out trusted admission code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ github.event.pull_request.base.sha }}
@@ -35,11 +34,76 @@ jobs:
       - name: Install trusted dependencies
         run: bun install --frozen-lockfile
 
-      - name: Select changed registry targets
+      - name: Fetch changed registry entries as untrusted data
+        id: registry
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_REPO: ${{ github.repository }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          registry_dir="$RUNNER_TEMP/registry"
+          mkdir "$registry_dir"
+          changed=false
+          count=0
+
+          while IFS= read -r path; do
+            case "$path" in
+              registry/*.json)
+                count=$((count + 1))
+                if (( count > 20 )); then
+                  echo "::error::A pull request may change at most 20 registry entries"
+                  exit 1
+                fi
+                name="${path#registry/}"
+                if [[ "$name" == */* ]]; then
+                  echo "::error file=$path::Nested registry paths are not allowed"
+                  exit 1
+                fi
+                changed=true
+                metadata="$RUNNER_TEMP/registry-entry-$count.json"
+                gh api \
+                  "repos/$HEAD_REPO/contents/$path?ref=$HEAD_SHA" \
+                  > "$metadata"
+                size="$(jq -r '.size' "$metadata")"
+                encoding="$(jq -r '.encoding' "$metadata")"
+                if [[ ! "$size" =~ ^[0-9]+$ ]] || (( size > 65536 )); then
+                  echo "::error file=$path::Registry entries must not exceed 64 KiB"
+                  exit 1
+                fi
+                if [[ "$encoding" != base64 ]]; then
+                  echo "::error file=$path::GitHub did not return base64 file content"
+                  exit 1
+                fi
+                jq -r '.content' "$metadata" | tr -d '\n' |
+                  base64 --decode > "$registry_dir/$name"
+                ;;
+            esac
+          done < <(
+            gh api --paginate \
+              "repos/$BASE_REPO/pulls/$PR_NUMBER/files?per_page=100" \
+              --jq '.[] | select(.status != "removed") | .filename'
+          )
+
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+          echo "directory=$registry_dir" >> "$GITHUB_OUTPUT"
+
+      - name: Validate changed registry entries
+        id: validate
+        if: steps.registry.outputs.changed == 'true'
+        run: bun run registry:validate
+        env:
+          REGISTRY_DIR: ${{ steps.registry.outputs.directory }}
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Resolve changed security targets
         id: targets
+        if: steps.registry.outputs.changed == 'true'
         run: >-
           bun run security:targets
-          --event "$GITHUB_EVENT_PATH"
+          --registry "${{ steps.registry.outputs.directory }}"
           --output "$RUNNER_TEMP/plugin-security-targets.json"
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -54,13 +118,13 @@ jobs:
           --report "$RUNNER_TEMP/plugin-security-report.md"
           --json "$RUNNER_TEMP/plugin-security-results.json"
 
-      - name: Write empty report
-        if: steps.targets.outputs.count == '0'
-        run: printf '# Security Scan\n\nNo added or changed registry entries.\n' > "$RUNNER_TEMP/plugin-security-report.md"
+      - name: Write empty admission report
+        if: steps.registry.outputs.changed == 'true' && steps.targets.outputs.count == '0'
+        run: printf '# Registry admission\n\nNo plugins require a security scan.\n' > "$RUNNER_TEMP/plugin-security-report.md"
 
-      - name: Publish report
+      - name: Publish admission report
         id: publish
-        if: always() && steps.targets.outcome == 'success'
+        if: always() && steps.registry.outputs.changed == 'true' && steps.targets.outcome == 'success'
         run: >-
           bun run security:publish
           "$RUNNER_TEMP/plugin-security-report.md"
@@ -68,13 +132,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      - name: Enforce scan result
+      - name: Enforce admission result
         if: always()
         env:
+          FETCH_OUTCOME: ${{ steps.registry.outcome }}
+          VALIDATE_OUTCOME: ${{ steps.validate.outcome }}
           TARGETS_OUTCOME: ${{ steps.targets.outcome }}
           SCAN_OUTCOME: ${{ steps.scan.outcome }}
           PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
+          CHANGED: ${{ steps.registry.outputs.changed }}
         run: |
-          test "$TARGETS_OUTCOME" = success
-          test "$SCAN_OUTCOME" = success -o "$SCAN_OUTCOME" = skipped
-          test "$PUBLISH_OUTCOME" = success
+          test "$FETCH_OUTCOME" = success
+          if [[ "$CHANGED" == true ]]; then
+            test "$VALIDATE_OUTCOME" = success
+            test "$TARGETS_OUTCOME" = success
+            test "$SCAN_OUTCOME" = success -o "$SCAN_OUTCOME" = skipped
+            test "$PUBLISH_OUTCOME" = success
+          fi
