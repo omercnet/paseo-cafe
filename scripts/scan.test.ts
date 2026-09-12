@@ -5,6 +5,8 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import type { PluginSecurity } from "../src/lib/plugin-schema"
 import {
   loadPublishedSecurityCatalog,
+  renderPluginsRedirect,
+  renderRobotsTxt,
   scanOne,
   securityForRevision,
 } from "./scan"
@@ -261,6 +263,66 @@ function mockRepository(
     throw new Error(`unexpected request: ${url}`)
   }) as typeof fetch
 }
+
+describe("renderPluginsRedirect", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    vi.resetModules()
+  })
+
+  it("keeps a fork redirect inside its project base path", async () => {
+    vi.stubEnv("VITE_SITE_URL", "https://someone.github.io/paseo-cafe")
+    vi.stubEnv("VITE_BASE_PATH", "/paseo-cafe")
+    vi.resetModules()
+    const scan = await import("./scan")
+
+    const html = scan.renderPluginsRedirect()
+
+    expect(html).toContain('content="0; url=/paseo-cafe/"')
+    expect(html).toContain(
+      'rel="canonical" href="https://someone.github.io/paseo-cafe/"'
+    )
+    expect(html).toContain('<a href="/paseo-cafe/">')
+  })
+
+  it("exports the canonical redirect renderer", () => {
+    expect(renderPluginsRedirect()).toContain('content="0; url=/"')
+  })
+})
+
+describe("renderRobotsTxt", () => {
+  // The deployment identity is read once when the module loads, so each case
+  // sets the environment the build would have and imports a fresh copy.
+  async function robotsFor(siteUrl: string): Promise<string> {
+    vi.stubEnv("VITE_SITE_URL", siteUrl)
+    vi.resetModules()
+    const scan = await import("./scan")
+    return scan.renderRobotsTxt()
+  }
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    vi.resetModules()
+  })
+
+  it("invites crawlers to the canonical site and points them at its sitemap", async () => {
+    const robots = await robotsFor("https://paseo.cafe")
+
+    expect(robots).toContain("Allow: /")
+    expect(robots).toContain("Sitemap: https://paseo.cafe/sitemap.xml")
+  })
+
+  it("keeps a copy of the catalog out of search results", async () => {
+    const robots = await robotsFor("https://someone.github.io/paseo-cafe")
+
+    expect(robots).toBe("User-agent: *\nDisallow: /\n")
+    expect(robots).not.toContain("Sitemap")
+  })
+
+  it("exports the same rule the scanner writes", () => {
+    expect(renderRobotsTxt()).toContain("User-agent: *")
+  })
+})
 
 describe("scanOne", () => {
   it("keeps branch metadata without attaching security when commit resolution fails", async () => {
