@@ -11,6 +11,7 @@ import { join } from "node:path"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import type { PluginSecurity } from "../src/lib/plugin-schema"
 import {
+  isFullyScanned,
   loadPublishedSecurityCatalog,
   readRegistryAddedAt,
   renderPluginsRedirect,
@@ -271,6 +272,47 @@ function mockRepository(
     throw new Error(`unexpected request: ${url}`)
   }) as typeof fetch
 }
+
+describe("isFullyScanned", () => {
+  it("requires a valid cached record for the right id, plus its OG image", async () => {
+    const registryRoot = exampleRegistry()
+    const cacheRoot = temporaryDirectory()
+    const outputDir = join(cacheRoot, "data")
+    const ogDir = join(cacheRoot, "og")
+    mkdirSync(outputDir)
+    mkdirSync(ogDir)
+    mockRepository(Response.json({ sha: REVISION }), "1.2.3")
+
+    expect(isFullyScanned("example.json", outputDir, ogDir)).toBe(false)
+
+    const record = await scanOne("example.json", {}, registryRoot)
+    writeFileSync(join(outputDir, "example.json"), JSON.stringify(record))
+    writeFileSync(join(ogDir, "example.png"), "png")
+
+    expect(isFullyScanned("example.json", outputDir, ogDir)).toBe(true)
+
+    // A scanError is a persistent catalog problem (bad manifest, placeholder
+    // version), not a sign the cache entry is incomplete — --if-missing must
+    // not keep retrying it every run, so it still counts as fully scanned.
+    writeFileSync(
+      join(outputDir, "example.json"),
+      JSON.stringify({
+        ...record,
+        scanError: "package.json version is a placeholder",
+      })
+    )
+    expect(isFullyScanned("example.json", outputDir, ogDir)).toBe(true)
+
+    writeFileSync(
+      join(outputDir, "example.json"),
+      JSON.stringify({ ...record, id: "someone-else" })
+    )
+    expect(isFullyScanned("example.json", outputDir, ogDir)).toBe(false)
+
+    writeFileSync(join(outputDir, "example.json"), "not json")
+    expect(isFullyScanned("example.json", outputDir, ogDir)).toBe(false)
+  })
+})
 
 describe("renderPluginsRedirect", () => {
   afterEach(() => {
