@@ -31,6 +31,7 @@ import { renderMarkdownToHtml } from "../src/lib/markdown.ts"
 import type { PluginRecord, PluginSecurity } from "../src/lib/plugin-schema.ts"
 import {
   gitCommitSchema,
+  normalizePluginVersion,
   pluginOwnerLogin,
   pluginRecordSchema,
   pluginSecuritySchema,
@@ -314,6 +315,7 @@ export async function scanOne(
       0,
       MAX_README_IMAGES
     )
+    const version = normalizePluginVersion(pkg?.version)
 
     const record: PluginRecord = {
       id,
@@ -326,7 +328,7 @@ export async function scanOne(
         manifestDescription ??
         firstParagraph(readme ?? "") ??
         "",
-      version: pkg?.version,
+      version,
       author: authorName(pkg?.author),
       license: repoMeta.license?.spdx_id ?? pkg?.license,
       categories: entry.categories,
@@ -380,6 +382,12 @@ export async function scanOne(
         `paseo-plugin.json id "${manifestId}" must match registry ID "${id}"`
       )
     }
+    if (version === "0.0.0") {
+      scanErrors.push(
+        'package.json version "0.0.0" is a placeholder; publish a real release version'
+      )
+    }
+
     if (scanErrors.length > 0) record.scanError = scanErrors.join("; ")
 
     return pluginRecordSchema.parse(record)
