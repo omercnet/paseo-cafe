@@ -27,7 +27,7 @@ export function pluginJsonLd(plugin: PluginRecord) {
     license: plugin.license
       ? `https://spdx.org/licenses/${plugin.license}.html`
       : undefined,
-    dateModified: plugin.repoMeta?.pushedAt,
+    datePublished: plugin.addedAt,
     author: plugin.owner
       ? { "@type": "Person", name: plugin.owner.login, url: plugin.owner.url }
       : undefined,

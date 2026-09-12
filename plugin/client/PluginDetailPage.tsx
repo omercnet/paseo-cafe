@@ -16,6 +16,7 @@ import type {
 import {
   DIRECTORY_CATEGORY_LABELS,
   DIRECTORY_PLATFORM_LABELS,
+  formatDirectoryDate,
   formatDirectoryVersion,
   getInstallCommand,
   getInstallRef,
@@ -49,9 +50,9 @@ interface PluginDetailPageProps {
   onBack: () => void
 }
 
-/** "2026-09-08T01:09:51Z" -> "2026-09-08". No Intl formatting — good enough for a byline. */
+/** "2026-09-08T01:09:51Z" -> "08 Sep 2026", the same rendering the website uses. */
 function formatDate(iso: string | undefined): string | undefined {
-  return iso ? iso.slice(0, 10) : undefined
+  return iso ? formatDirectoryDate(iso) : undefined
 }
 
 function installationStateLabel(installation: InstalledPlugin): string {
@@ -518,7 +519,6 @@ export function PluginDetailPage({
       : `${passedHealthChecks} passed · ${failedHealthChecks} not passed${
           unknownHealthChecks > 0 ? ` · ${unknownHealthChecks} unknown` : ""
         }`
-  const sourceUpdatedDate = formatDate(entry.repoMeta?.pushedAt)
   const catalogScannedDate = formatDate(entry.scannedAt)
   const securityScannedDate = formatDate(securityAttestation?.scannedAt)
   const securityReportUrl = securityAttestation?.reportUrl
@@ -614,11 +614,6 @@ export function PluginDetailPage({
           ) : null}
           {entry.author ? (
             <Text style={styles.metaText}>By {entry.author}</Text>
-          ) : null}
-          {formatDate(entry.repoMeta?.pushedAt) ? (
-            <Text style={styles.metaText}>
-              Last updated {formatDate(entry.repoMeta?.pushedAt)}
-            </Text>
           ) : null}
           <Pressable
             accessibilityRole="link"
@@ -1139,17 +1134,12 @@ export function PluginDetailPage({
             </View>
           </View>
           <View style={styles.section}>
-            <Text style={styles.label}>Freshness and status</Text>
+            <Text style={styles.label}>Catalog status</Text>
             {securityAttestation?.commit && installRef ? (
               <Text style={styles.modalText}>
                 Before installation, Paseo Cafe verifies that {installRef} still
                 points to scanned commit{" "}
                 {securityAttestation.commit.slice(0, 12)}.
-              </Text>
-            ) : null}
-            {sourceUpdatedDate ? (
-              <Text style={styles.modalText}>
-                Repository updated: {sourceUpdatedDate}
               </Text>
             ) : null}
             {catalogScannedDate ? (

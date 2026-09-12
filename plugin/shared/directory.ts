@@ -6,6 +6,7 @@ import {
 } from "@getpaseo/plugin"
 import { z } from "zod"
 import {
+  CATALOG_ADDED_AT_LABEL,
   CATALOG_CATEGORIES,
   CATALOG_CATEGORY_LABELS,
   CATALOG_HEALTH_KEYS,
@@ -14,11 +15,15 @@ import {
   CATALOG_VERSION_MAX_LENGTH,
   type CatalogCategory,
   type CatalogHealthCheck,
+  compareCatalogAddedAt,
+  formatCatalogDateForReader,
   formatCatalogVersion,
+  getCatalogAddedDateBadge,
   getCatalogInstallCommand,
   getCatalogInstallRef,
   getCatalogRepositoryOwner,
   getCatalogRepositoryUrl,
+  isCatalogAddedAtKnown,
   isOfficialCatalogPlugin,
   isValidCatalogCommit,
   isValidCatalogPath,
@@ -103,9 +108,17 @@ export const normalizeDirectoryCategories = normalizeCatalogCategories
 export const DIRECTORY_SORT_MODES = [
   "updates-first",
   "popular",
-  "recent",
+  "recently-added",
   "a-z",
 ] as const
+
+/** Shared with the website's "Recently added" sort — see ./catalog.ts. */
+export const DIRECTORY_ADDED_AT_LABEL = CATALOG_ADDED_AT_LABEL
+export const compareDirectoryAddedAt = compareCatalogAddedAt
+export const isDirectoryAddedAtKnown = isCatalogAddedAtKnown
+
+export const getDirectoryAddedDateBadge = getCatalogAddedDateBadge
+export const formatDirectoryDate = formatCatalogDateForReader
 
 export const DIRECTORY_STATUS_FILTERS = [
   "all",
@@ -143,6 +156,29 @@ function containsSameValues(
   return true
 }
 
+/**
+ * Whether the surface is showing its default, unfiltered view — the only
+ * state where the curated highlight sections belong. The sort is part of
+ * that: the highlights are the one part of the surface that does *not*
+ * reorder, so leaving them in place after someone picks a different sort
+ * reads as the sort having done nothing. Mirrors the website's `showFeatured`
+ * rule in src/routes/index.tsx; keep the two in step.
+ */
+export function isDefaultDirectoryBrowseView(
+  browse: Pick<
+    DirectoryBrowseSettings,
+    "query" | "categories" | "platforms" | "status" | "sort"
+  >
+): boolean {
+  return (
+    browse.query.trim() === "" &&
+    browse.categories.length === 0 &&
+    browse.platforms.length === 0 &&
+    browse.status === DEFAULT_DIRECTORY_BROWSE_SETTINGS.status &&
+    browse.sort === DEFAULT_DIRECTORY_BROWSE_SETTINGS.sort
+  )
+}
+
 /** Compares persisted browse state using set semantics for multi-select filters. */
 export function directoryBrowseSettingsEqual(
   left: DirectoryBrowseSettings,
@@ -163,7 +199,7 @@ export function migrateDirectorySettings(
   fromVersion: number
 ): unknown {
   if (
-    fromVersion >= 2 ||
+    fromVersion >= 3 ||
     typeof values !== "object" ||
     values === null ||
     Array.isArray(values)
@@ -172,9 +208,18 @@ export function migrateDirectorySettings(
   }
 
   const previous = values as Record<string, unknown>
+  const browse =
+    previous.browse &&
+    typeof previous.browse === "object" &&
+    !Array.isArray(previous.browse)
+      ? (previous.browse as Record<string, unknown>)
+      : DEFAULT_DIRECTORY_BROWSE_SETTINGS
   return {
     ...previous,
-    browse: previous.browse ?? DEFAULT_DIRECTORY_BROWSE_SETTINGS,
+    browse: {
+      ...browse,
+      ...(browse.sort === "recent" ? { sort: "updates-first" } : {}),
+    },
   }
 }
 
@@ -186,7 +231,7 @@ export function migrateDirectorySettings(
 export const directorySettings = defineSettings({
   id: "directory-settings",
   scope: "host",
-  version: 2,
+  version: 3,
   schema: z.object({
     directoryUrl: catalogUrlSchema.default(DEFAULT_DIRECTORY_URL),
     browse: directoryBrowseSettingsSchema.default(
@@ -403,6 +448,11 @@ export const directoryEntrySchema = z.object({
   installNotesHtml: z.string().max(100_000).optional(),
   limitationsNotesHtml: z.string().max(100_000).optional(),
   scanError: z.string().max(4_000).optional(),
+  // When the catalog listed this plugin (see PluginRecord.addedAt on the
+  // site). Kept as a plain bounded string like scannedAt below: a catalog
+  // that sends a malformed date should cost that plugin its place in the
+  // "Recently added" order, not drop the whole entry from the list.
+  addedAt: z.string().max(100).optional(),
   scannedAt: z.string().max(100).optional(),
   health: z.object(directoryHealthShape).optional(),
   // Mirrors src/lib/plugin-schema.ts's pluginSecuritySchema invariants — a

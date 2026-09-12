@@ -50,7 +50,7 @@ export function CatalogResults({
           </p>
         </div>
       </div>
-      <PluginGrid plugins={plugins} />
+      <PluginGrid plugins={plugins} showAddedDate={search.sort === "added"} />
       <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
         <p className="text-foreground/50 text-sm" aria-live="polite">
           Showing {pageStart + 1}–{pageEnd} of {totalCount} · Page {page} of{" "}

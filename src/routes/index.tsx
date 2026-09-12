@@ -161,8 +161,15 @@ function App() {
     () => sortPlugins(plugins, "popular").slice(0, SECTION_LIMIT),
     [plugins]
   )
-  const recentlyUpdated = useMemo(
-    () => sortPlugins(plugins, "updated").slice(0, SECTION_LIMIT),
+  // Only plugins with a known listing date: without git history to derive it
+  // from (see readRegistryAddedAt in scripts/scan.ts) this section stays
+  // empty rather than presenting an arbitrary order as "newest".
+  const recentlyAdded = useMemo(
+    () =>
+      sortPlugins(
+        plugins.filter((plugin) => plugin.addedAt),
+        "added"
+      ).slice(0, SECTION_LIMIT),
     [plugins]
   )
   const showFeatured = !hasFilters && search.sort === "popular" && page === 1
@@ -226,9 +233,9 @@ function App() {
                 plugins={popular}
               />
               <FeaturedSection
-                title="Recently updated"
-                description="Plugins with recent repository activity."
-                plugins={recentlyUpdated}
+                title="Recently added"
+                description="The newest listings in the directory."
+                plugins={recentlyAdded}
               />
             </div>
           ) : null}

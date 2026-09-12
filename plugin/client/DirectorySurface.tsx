@@ -16,6 +16,8 @@ import type {
   InstalledPlugin,
 } from "../shared/directory"
 import {
+  compareDirectoryAddedAt,
+  DIRECTORY_ADDED_AT_LABEL,
   DIRECTORY_CATEGORIES,
   DIRECTORY_CATEGORY_LABELS,
   DIRECTORY_PLATFORM_LABELS,
@@ -27,6 +29,8 @@ import {
   directoryUpdateStatusRpc,
   findInstallations,
   getInstallRef,
+  isDefaultDirectoryBrowseView,
+  isDirectoryAddedAtKnown,
   normalizeDirectoryCategories,
 } from "../shared/directory"
 import { filterAccessibilityLabel } from "./accessibility"
@@ -282,7 +286,7 @@ interface SortOption {
 const SORT_OPTIONS: readonly SortOption[] = [
   { value: "updates-first", label: "Updates first" },
   { value: "popular", label: "Popular" },
-  { value: "recent", label: "Recently updated" },
+  { value: "recently-added", label: DIRECTORY_ADDED_AT_LABEL },
   { value: "a-z", label: "A–Z" },
 ]
 
@@ -298,15 +302,6 @@ function compareText(a: string | undefined, b: string | undefined): number {
   if (left < right) return -1
   if (left > right) return 1
   return 0
-}
-
-function timeValue(value: string | undefined): number {
-  const parsed = value ? Date.parse(value) : 0
-  return Number.isFinite(parsed) ? parsed : 0
-}
-
-function compareDateDesc(a: string | undefined, b: string | undefined): number {
-  return timeValue(b) - timeValue(a)
 }
 
 function compareStarsDesc(a: DirectoryEntry, b: DirectoryEntry): number {
@@ -336,7 +331,6 @@ function compareEntries(
       Number(entryHasUpdate(b, installationByEntryId)) -
         Number(entryHasUpdate(a, installationByEntryId)) ||
       compareStarsDesc(a, b) ||
-      compareDateDesc(a.repoMeta?.pushedAt, b.repoMeta?.pushedAt) ||
       compareText(a.name, b.name) ||
       compareText(a.repo, b.repo) ||
       compareText(a.id, b.id)
@@ -346,16 +340,17 @@ function compareEntries(
   if (sortMode === "popular") {
     return (
       compareStarsDesc(a, b) ||
-      compareDateDesc(a.repoMeta?.pushedAt, b.repoMeta?.pushedAt) ||
       compareText(a.name, b.name) ||
       compareText(a.repo, b.repo) ||
       compareText(a.id, b.id)
     )
   }
 
-  if (sortMode === "recent") {
+  // Newest catalog listings first, using the same rule as the website's
+  // "Recently added" sort (see compareCatalogAddedAt in ../shared/catalog).
+  if (sortMode === "recently-added") {
     return (
-      compareDateDesc(a.repoMeta?.pushedAt, b.repoMeta?.pushedAt) ||
+      compareDirectoryAddedAt(a, b) ||
       compareStarsDesc(a, b) ||
       compareText(a.name, b.name) ||
       compareText(a.repo, b.repo) ||
@@ -377,20 +372,6 @@ function sortEntries(
 ): DirectoryEntry[] {
   return [...entries].sort((a, b) =>
     compareEntries(a, b, sortMode, installationByEntryId)
-  )
-}
-
-function isDefaultBrowseState(
-  search: string,
-  categoryFilter: ReadonlySet<string>,
-  platformFilter: ReadonlySet<string>,
-  statusFilter: InstallationStatusFilter
-): boolean {
-  return (
-    search.trim() === "" &&
-    categoryFilter.size === 0 &&
-    platformFilter.size === 0 &&
-    statusFilter === "all"
   )
 }
 
@@ -883,12 +864,8 @@ export function DirectorySurface({ theme, layout }: PluginSurfaceProps) {
       }),
     [nonStatusFiltered, effectiveStatusFilter, installationByEntryId]
   )
-  const defaultBrowseState = isDefaultBrowseState(
-    search,
-    categoryFilter,
-    platformFilter,
-    statusFilter
-  )
+  // browseSettings already carries exactly the state this depends on.
+  const defaultBrowseState = isDefaultDirectoryBrowseView(browseSettings)
 
   const sorted = useMemo(
     () => sortEntries(filtered, sortMode, installationByEntryId),
@@ -905,13 +882,17 @@ export function DirectorySurface({ theme, layout }: PluginSurfaceProps) {
         : [],
     [defaultBrowseState, filtered, installationByEntryId]
   )
-  const recentHighlights = useMemo(
+  // Entries with no usable listing date are left out entirely: a catalog that
+  // doesn't publish valid addedAt values shows no section rather than an
+  // arbitrary five.
+  const recentlyAddedHighlights = useMemo(
     () =>
       defaultBrowseState
-        ? sortEntries(filtered, "recent", installationByEntryId).slice(
-            0,
-            FEATURED_LIMIT
-          )
+        ? sortEntries(
+            filtered.filter(isDirectoryAddedAtKnown),
+            "recently-added",
+            installationByEntryId
+          ).slice(0, FEATURED_LIMIT)
         : [],
     [defaultBrowseState, filtered, installationByEntryId]
   )
@@ -1257,7 +1238,8 @@ export function DirectorySurface({ theme, layout }: PluginSurfaceProps) {
               </Text>
             ) : null}
             {defaultBrowseState &&
-            (popularHighlights.length > 0 || recentHighlights.length > 0) ? (
+            (popularHighlights.length > 0 ||
+              recentlyAddedHighlights.length > 0) ? (
               <View style={styles.featuredBlock}>
                 {popularHighlights.length > 0 ? (
                   <View style={styles.featuredSection}>
@@ -1288,23 +1270,24 @@ export function DirectorySurface({ theme, layout }: PluginSurfaceProps) {
                     </View>
                   </View>
                 ) : null}
-                {recentHighlights.length > 0 ? (
+                {recentlyAddedHighlights.length > 0 ? (
                   <View style={styles.featuredSection}>
                     <View style={styles.sectionHeading}>
                       <Text
                         accessibilityRole="header"
                         style={styles.featuredHeader}
                       >
-                        Recently updated
+                        {DIRECTORY_ADDED_AT_LABEL}
                       </Text>
                       <Text style={styles.featuredDescription}>
-                        Plugins with recent repository activity.
+                        The newest listings in the directory.
                       </Text>
                     </View>
                     <View style={styles.featuredItems}>
-                      {recentHighlights.map((item) => (
+                      {recentlyAddedHighlights.map((item) => (
                         <PluginRow
-                          key={`recent-${item.id}`}
+                          key={`recently-added-${item.id}`}
+                          showAddedDate
                           entry={item}
                           theme={theme}
                           installations={
@@ -1337,6 +1320,7 @@ export function DirectorySurface({ theme, layout }: PluginSurfaceProps) {
             theme={theme}
             installations={installationByEntryId.get(item.id) ?? []}
             compact={layout.compact}
+            showAddedDate={sortMode === "recently-added"}
             onPress={() => openPlugin(item)}
           />
         )}

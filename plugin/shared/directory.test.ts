@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest"
 import {
+  compareDirectoryAddedAt,
   DEFAULT_DIRECTORY_BROWSE_SETTINGS,
+  DIRECTORY_ADDED_AT_LABEL,
   DIRECTORY_CATEGORY_LABELS,
   type DirectoryCategory,
   directoryAttachments,
@@ -13,11 +15,14 @@ import {
   directorySecurityAttachments,
   directorySettings,
   directoryUpdateStatusRpc,
+  getDirectoryAddedDateBadge,
   getInstallCommand,
   getInstallRef,
   getRepositoryUrl,
   getRepositoryUrlAtRef,
   getSiteUrl,
+  isDefaultDirectoryBrowseView,
+  isDirectoryAddedAtKnown,
   isOfficialPlugin,
   isTrustedCatalogUrl,
   isValidInstallPath,
@@ -209,6 +214,121 @@ describe("catalog URL transport policy", () => {
   })
 })
 
+describe("listing date badges", () => {
+  // Mid-month and mid-day, so no time zone can shift it into another month.
+  const entry = { addedAt: "2026-09-15T12:00:00Z" }
+  const localDay = new Date(entry.addedAt).getDate()
+
+  it("labels listing dates and renders them the reader's way", () => {
+    expect(getDirectoryAddedDateBadge(entry, "en-US")).toBe(
+      `Added Sep ${localDay}, 2026`
+    )
+    expect(getDirectoryAddedDateBadge(entry, "en-GB")).toBe(
+      `Added ${localDay} Sept 2026`
+    )
+  })
+
+  it("falls back to a fixed UTC rendering when the locale is unusable", () => {
+    expect(getDirectoryAddedDateBadge(entry, "not a locale")).toBe(
+      "Added 15 Sep 2026"
+    )
+  })
+
+  it("shows nothing for a missing or unusable date", () => {
+    expect(getDirectoryAddedDateBadge({})).toBeUndefined()
+    expect(getDirectoryAddedDateBadge({ addedAt: "whenever" })).toBeUndefined()
+  })
+})
+
+describe("default browse view", () => {
+  it("treats the untouched surface as the default view", () => {
+    expect(
+      isDefaultDirectoryBrowseView(DEFAULT_DIRECTORY_BROWSE_SETTINGS)
+    ).toBe(true)
+  })
+
+  it("stops being the default view once a different sort is chosen", () => {
+    expect(
+      isDefaultDirectoryBrowseView({
+        ...DEFAULT_DIRECTORY_BROWSE_SETTINGS,
+        sort: "recently-added",
+      })
+    ).toBe(false)
+  })
+
+  it.each([
+    { query: "git" },
+    { categories: ["git" as const] },
+    { platforms: ["macos"] },
+    { status: "installed" as const },
+  ])("stops being the default view when filtered by %o", (overrides) => {
+    expect(
+      isDefaultDirectoryBrowseView({
+        ...DEFAULT_DIRECTORY_BROWSE_SETTINGS,
+        ...overrides,
+      })
+    ).toBe(false)
+  })
+})
+
+describe("directory listing dates", () => {
+  it("keeps the catalog's listing date on parsed entries", () => {
+    expect(
+      directoryEntrySchema.parse({
+        ...validEntry,
+        addedAt: "2026-03-04T05:06:07Z",
+      }).addedAt
+    ).toBe("2026-03-04T05:06:07Z")
+  })
+
+  it("keeps an entry whose listing date is unusable instead of dropping it", () => {
+    const entry = directoryEntrySchema.parse({
+      ...validEntry,
+      addedAt: "whenever",
+    })
+
+    expect(entry.id).toBe("plugin")
+    expect(
+      compareDirectoryAddedAt(entry, { addedAt: "2026-01-01T00:00:00Z" })
+    ).toBeGreaterThan(0)
+  })
+
+  it("does not treat a truthy invalid date as a known listing date", () => {
+    expect(isDirectoryAddedAtKnown({ addedAt: "whenever" })).toBe(false)
+    expect(isDirectoryAddedAtKnown({ addedAt: "1969-12-31T23:59:59Z" })).toBe(
+      false
+    )
+    expect(
+      compareDirectoryAddedAt({ addedAt: "1969-12-31T23:59:59Z" }, {})
+    ).toBe(0)
+    expect(isDirectoryAddedAtKnown({ addedAt: "2026-01-01T00:00:00Z" })).toBe(
+      true
+    )
+  })
+
+  it("orders newest listings first and unknown dates last", () => {
+    const entries = [
+      { id: "unknown" },
+      { id: "older", addedAt: "2026-01-01T00:00:00Z" },
+      { id: "newer", addedAt: "2026-07-01T00:00:00Z" },
+    ]
+
+    expect(
+      [...entries].sort(compareDirectoryAddedAt).map((entry) => entry.id)
+    ).toEqual(["newer", "older", "unknown"])
+  })
+
+  it("persists the shared sort mode under the same label as the website", () => {
+    expect(
+      directoryBrowseSettingsSchema.parse({ sort: "recently-added" }).sort
+    ).toBe("recently-added")
+    expect(DIRECTORY_ADDED_AT_LABEL).toBe("Recently added")
+    expect(
+      directoryBrowseSettingsSchema.safeParse({ sort: "recent" }).success
+    ).toBe(false)
+  })
+})
+
 describe("directory taxonomy and browse settings", () => {
   it("normalizes catalog categories without replacing stable slugs with labels", () => {
     const labelsWithPunctuation: Record<DirectoryCategory, string> = {
@@ -279,6 +399,23 @@ describe("directory taxonomy and browse settings", () => {
       directoryUrl,
       browse: DEFAULT_DIRECTORY_BROWSE_SETTINGS,
     })
+  })
+
+  it("migrates the removed repository-activity sort to version updates", () => {
+    const migrated = migrateDirectorySettings(
+      {
+        directoryUrl: "https://catalog.internal/api/plugins",
+        browse: {
+          ...DEFAULT_DIRECTORY_BROWSE_SETTINGS,
+          sort: "recent",
+        },
+      },
+      2
+    )
+
+    expect(directorySettings.schema.parse(migrated).browse.sort).toBe(
+      "updates-first"
+    )
   })
 })
 

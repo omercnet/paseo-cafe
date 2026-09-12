@@ -177,16 +177,23 @@ export function getCatalogInstallCommand(entry: {
   return args ? ["paseo", "plugin", "add", ...args].join(" ") : undefined
 }
 
+export type CatalogHealthCheck =
+  | "manifestValid"
+  | "hasReadme"
+  | "hasLicense"
+  | "hasTests"
+  | "hasTypecheckScript"
+  | "updatedRecently"
+
+// User-facing health excludes repository activity: plugin updates are defined
+// by package.json semver, not by unrelated pushes to a source repository.
 export const CATALOG_HEALTH_KEYS = [
   "manifestValid",
   "hasReadme",
   "hasLicense",
   "hasTests",
   "hasTypecheckScript",
-  "updatedRecently",
-] as const
-
-export type CatalogHealthCheck = (typeof CATALOG_HEALTH_KEYS)[number]
+] as const satisfies readonly CatalogHealthCheck[]
 
 export const CATALOG_HEALTH_LABELS: Record<CatalogHealthCheck, string> = {
   manifestValid: "Manifest ID matches registry",
@@ -194,5 +201,114 @@ export const CATALOG_HEALTH_LABELS: Record<CatalogHealthCheck, string> = {
   hasLicense: "Has a license",
   hasTests: "Has tests",
   hasTypecheckScript: "Has a typecheck script",
-  updatedRecently: "Updated in the last 6 months",
+  updatedRecently: "Repository active in the last 6 months",
+}
+
+/**
+ * When a plugin's registry entry first landed in this repository's git
+ * history (ISO 8601) — i.e. when the catalog accepted it. The scanner
+ * derives it (see scripts/scan.ts on the website); it is never hand-authored,
+ * so it can't be backdated or nudged forward by a submitter, and it means
+ * the same thing on both surfaces. It is absent when the history isn't
+ * available (a shallow clone, or an entry that isn't committed yet).
+ */
+export const CATALOG_ADDED_AT_LABEL = "Recently added"
+
+export interface CatalogAddedAt {
+  addedAt?: string
+}
+
+/** Epoch milliseconds for a catalog timestamp; 0 when missing or unparseable. */
+export function getCatalogAddedAtTime(entry: CatalogAddedAt): number {
+  const parsed = entry.addedAt ? Date.parse(entry.addedAt) : Number.NaN
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0
+}
+
+/** Whether an entry has a usable catalog-listing timestamp. */
+export function isCatalogAddedAtKnown(entry: CatalogAddedAt): boolean {
+  return getCatalogAddedAtTime(entry) > 0
+}
+
+/**
+ * Most recently listed first. Entries with no known date sort last rather
+ * than first, so a missing date never fakes its way to the top of the list.
+ * Callers break ties with their own stable ordering.
+ */
+export function compareCatalogAddedAt(
+  a: CatalogAddedAt,
+  b: CatalogAddedAt
+): number {
+  return getCatalogAddedAtTime(b) - getCatalogAddedAtTime(a)
+}
+
+const CATALOG_MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+]
+
+/**
+ * "2026-09-08T01:09:51Z" -> "08 Sep 2026". Built by hand from UTC fields
+ * rather than through Intl: the website renders this on the server and again
+ * in the browser, and a locale or ICU difference between the two is a React
+ * hydration mismatch. Undefined for anything unparseable, so a bad date shows
+ * nothing rather than "NaN".
+ */
+export function formatCatalogDate(iso: string): string | undefined {
+  const parsed = Date.parse(iso)
+  if (!Number.isFinite(parsed)) return undefined
+  const date = new Date(parsed)
+  const day = String(date.getUTCDate()).padStart(2, "0")
+  return `${day} ${CATALOG_MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`
+}
+
+/**
+ * The reader's own rendering of the same instant: Intl picks the field order
+ * and month name from their locale, and the day is the one their clock shows,
+ * so "Sep 11, 2026" for en-US and "11 Sept 2026" for en-GB.
+ *
+ * Falls back to formatCatalogDate for anything Intl can't do. That matters in
+ * two real places: a React Native runtime built without full ICU, and the
+ * website's server render, which happens before the reader's locale and time
+ * zone are knowable — see ReaderDate in src/components/reader-date.tsx, which
+ * renders the fallback and swaps to this once mounted.
+ */
+export function formatCatalogDateForReader(
+  iso: string,
+  locale?: string
+): string | undefined {
+  const parsed = Date.parse(iso)
+  if (!Number.isFinite(parsed)) return undefined
+  if (typeof Intl === "undefined" || !Intl.DateTimeFormat) {
+    return formatCatalogDate(iso)
+  }
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }).format(new Date(parsed))
+  } catch {
+    return formatCatalogDate(iso)
+  }
+}
+
+/** "Added Sep 11, 2026", or undefined when the listing date is unknown. */
+export function getCatalogAddedDateBadge(
+  entry: CatalogAddedAt,
+  locale?: string
+): string | undefined {
+  const formatted = entry.addedAt
+    ? formatCatalogDateForReader(entry.addedAt, locale)
+    : undefined
+  return formatted && `Added ${formatted}`
 }

@@ -7,6 +7,7 @@ import {
   DIRECTORY_CATEGORY_LABELS,
   DIRECTORY_PLATFORM_LABELS,
   formatDirectoryVersion,
+  getDirectoryAddedDateBadge,
   HEALTH_KEYS,
   normalizeDirectoryCategory,
 } from "../shared/directory"
@@ -17,6 +18,8 @@ interface PluginRowProps {
   theme: PluginTheme
   compact: boolean
   installations: readonly InstalledPlugin[]
+  /** Show when the catalog listed this plugin while ordered by that date. */
+  showAddedDate?: boolean
   onPress: () => void
 }
 
@@ -73,6 +76,7 @@ export function PluginRow({
   theme,
   compact,
   installations,
+  showAddedDate,
   onPress,
 }: PluginRowProps) {
   const styles = useMemo(
@@ -198,7 +202,9 @@ export function PluginRow({
         : undefined
 
   const starCount = entry.repoMeta?.stars
-  const updatedAt = entry.repoMeta?.pushedAt?.slice(0, 10)
+  const addedBadge = showAddedDate
+    ? getDirectoryAddedDateBadge(entry)
+    : undefined
   const healthBadge = getHealthBadge(entry)
   const versionLabel = formatDirectoryVersion(entry.version)
   const compatibilityLabel = entry.paseoVersionRequirement
@@ -249,11 +255,9 @@ export function PluginRow({
             </Text>
           </View>
         ) : null}
-        {updatedAt ? (
+        {addedBadge ? (
           <View style={styles.metaBadge}>
-            <Text style={styles.metaBadgeText("muted")}>
-              Updated {updatedAt}
-            </Text>
+            <Text style={styles.metaBadgeText("muted")}>{addedBadge}</Text>
           </View>
         ) : null}
         <View style={styles.metaBadge}>

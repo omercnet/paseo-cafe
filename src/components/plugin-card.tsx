@@ -5,6 +5,7 @@ import {
   IconVersions,
 } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
+import { ReaderDate } from "@/components/reader-date"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -16,7 +17,14 @@ import {
 import type { PluginRecord } from "@/lib/plugin-schema"
 import { formatPluginVersion, PLATFORM_LABELS } from "@/lib/registry-schema"
 
-export function PluginCard({ plugin }: { plugin: PluginRecord }) {
+/** Shows the catalog listing date only when the results are ordered by it. */
+export function PluginCard({
+  plugin,
+  showAddedDate,
+}: {
+  plugin: PluginRecord
+  showAddedDate?: boolean
+}) {
   const healthIsComplete =
     plugin.health.manifestValid &&
     plugin.health.hasReadme &&
@@ -65,7 +73,7 @@ export function PluginCard({ plugin }: { plugin: PluginRecord }) {
             {plugin.description || "No description available."}
           </CardDescription>
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="sr-only">Freshness and health</span>
+            <span className="sr-only">Version and health</span>
             {plugin.owner ? (
               <span className="flex items-center gap-1.5 text-foreground/50 text-xs">
                 <img
@@ -76,11 +84,12 @@ export function PluginCard({ plugin }: { plugin: PluginRecord }) {
                 {plugin.owner.login}
               </span>
             ) : null}
-            <Badge
-              variant={plugin.health.updatedRecently ? "secondary" : "outline"}
-            >
-              {plugin.health.updatedRecently ? "Fresh" : "Stale"}
-            </Badge>
+            {showAddedDate && plugin.addedAt ? (
+              <Badge variant="secondary">
+                Added&nbsp;
+                <ReaderDate iso={plugin.addedAt} />
+              </Badge>
+            ) : null}
             <Badge variant={healthIsComplete ? "secondary" : "outline"}>
               {healthIsComplete ? "Healthy" : "Incomplete health checks"}
             </Badge>
