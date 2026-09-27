@@ -1,0 +1,8 @@
+{
+  "repo": "oliexe/paseo-bots",
+  "package": "@oliexe/paseo-bots",
+  "categories": ["orchestration", "productivity", "other"],
+  "platforms": ["macos", "linux", "windows"],
+  "caveats": [],
+  "submittedBy": "oliexe"
+}
