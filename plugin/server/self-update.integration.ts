@@ -4,7 +4,7 @@ import { once } from "node:events"
 import { chmod, cp, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises"
 import { createServer } from "node:http"
 import { tmpdir } from "node:os"
-import { delimiter, dirname, join, resolve } from "node:path"
+import { delimiter, dirname, join, relative, resolve } from "node:path"
 import { setTimeout as delay } from "node:timers/promises"
 import { fileURLToPath } from "node:url"
 import { promisify } from "node:util"
@@ -163,7 +163,7 @@ async function main(): Promise<void> {
 
     if (process.env.PASEO_CAFE_REQUIREMENTS_ONLY === "1") {
       const installed = await execPaseo(
-        ["plugin", "add", pluginRoot, "--json"],
+        ["plugin", "add", relative(process.cwd(), pluginRoot) || ".", "--json"],
         120_000
       )
       const current = JSON.parse(installed.stdout) as PluginListItem
