@@ -161,6 +161,16 @@ async function main(): Promise<void> {
       return JSON.parse(stdout).connectedDaemon === "reachable"
     })
 
+    if (process.env.PASEO_CAFE_REQUIREMENTS_ONLY === "1") {
+      const installed = await execPaseo(
+        ["plugin", "add", pluginRoot, "--json"],
+        120_000
+      )
+      const current = JSON.parse(installed.stdout) as PluginListItem
+      assert.equal(current.status, "running")
+      return
+    }
+
     const installed = await execPaseo(
       ["plugin", "add", `npm:paseo-cafe@${PREVIOUS_VERSION}`, "--json"],
       120_000
